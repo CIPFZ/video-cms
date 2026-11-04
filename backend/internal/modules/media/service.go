@@ -171,14 +171,14 @@ func (s *Service) ListItems(ctx context.Context, page, size int, query, kind str
 }
 type RunFilter struct {
 	SourceID uint
-	Mode     string // a concrete mode, "collect" for every non-health run, or empty for all
+	Mode     string // a concrete collection mode; empty or "collect" for all
 	Status   string
 	Page     int
 	PageSize int
 }
 
-// ListRuns filters and paginates in the database. Health checks run every 20 minutes
-// per source, so a fixed "latest N" window would hide the weekly collection runs.
+// ListRuns filters and paginates collection runs in the database. Health checks
+// have their own history; runs queued as health checks by older versions stay hidden.
 func (s *Service) ListRuns(ctx context.Context, f RunFilter) (map[string]any, error) {
 	if f.Page < 1 {
 		f.Page = 1
@@ -186,13 +186,11 @@ func (s *Service) ListRuns(ctx context.Context, f RunFilter) (map[string]any, er
 	if f.PageSize < 1 || f.PageSize > 100 {
 		f.PageSize = 10
 	}
-	db := s.db.WithContext(ctx).Model(&CollectionRun{})
+	db := s.db.WithContext(ctx).Model(&CollectionRun{}).Where("mode <> ?", "health")
 	if f.SourceID > 0 {
 		db = db.Where("source_id = ?", f.SourceID)
 	}
-	if f.Mode == "collect" {
-		db = db.Where("mode <> ?", "health")
-	} else if f.Mode != "" {
+	if f.Mode != "" && f.Mode != "collect" {
 		db = db.Where("mode = ?", f.Mode)
 	}
 	// Summary counts ignore the status filter so the cards keep their meaning.
@@ -219,6 +217,37 @@ func (s *Service) ListRuns(ctx context.Context, f RunFilter) (map[string]any, er
 		return db.Order("page, id")
 	}).Order("id desc").Offset((f.Page - 1) * f.PageSize).Limit(f.PageSize).Find(&rows).Error
 	return map[string]any{"list": rows, "total": total, "page": f.Page, "pageSize": f.PageSize, "summary": summary}, err
+}
+// ListRunItems pages the titles a run inserted, updated or failed to save.
+func (s *Service) ListRunItems(ctx context.Context, runID uint, action string, page, size int) (map[string]any, error) {
+	if page < 1 {
+		page = 1
+	}
+	if size < 1 || size > 100 {
+		size = 20
+	}
+	db := s.db.WithContext(ctx).Model(&CollectionRunItem{}).Where("collection_run_id = ?", runID)
+	var groups []struct {
+		Action string
+		Count  int64
+	}
+	if err := db.Session(&gorm.Session{}).Select("action, COUNT(*) AS count").Group("action").Scan(&groups).Error; err != nil {
+		return nil, err
+	}
+	summary := map[string]int64{}
+	for _, g := range groups {
+		summary[g.Action] = g.Count
+	}
+	if action != "" {
+		db = db.Where("action = ?", action)
+	}
+	var total int64
+	if err := db.Session(&gorm.Session{}).Count(&total).Error; err != nil {
+		return nil, err
+	}
+	var rows []CollectionRunItem
+	err := db.Order("id").Offset((page - 1) * size).Limit(size).Find(&rows).Error
+	return map[string]any{"list": rows, "total": total, "page": page, "pageSize": size, "summary": summary}, err
 }
 func (s *Service) ListHealth(ctx context.Context, id uint) ([]HealthCheck, error) {
 	var rows []HealthCheck

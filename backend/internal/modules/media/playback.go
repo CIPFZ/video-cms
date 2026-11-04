@@ -27,7 +27,7 @@ func (s *Service) RefreshItem(ctx context.Context, id uint) error {
 			}
 			for _, row := range rows {
 				if firstString(row, "vod_id") == link.ExternalID {
-					_, e = s.saveRecord(ctx, src, row, link.ListHash)
+					_, _, e = s.saveRecord(ctx, src, row, link.ListHash)
 					return e
 				}
 			}

@@ -4,12 +4,22 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/CIPFZ/video-cms/internal/modules/media"
 	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+type mediaEndpoint struct {
+	suffix string
+	method string
+	desc   string
+}
+
+var mediaRunItemsEndpoint = mediaEndpoint{"/media/runs/:id/items", "GET", "List collection run items"}
 
 func ensureMediaModule(tx *gorm.DB, prefix string) error {
 	parent := model.SysMenu{
@@ -61,11 +71,7 @@ func ensureMediaModule(tx *gorm.DB, prefix string) error {
 			return err
 		}
 	}
-	endpoints := []struct {
-		suffix string
-		method string
-		desc   string
-	}{
+	endpoints := []mediaEndpoint{
 		{"/media/sources", "GET", "List media sources"},
 		{"/media/sources", "POST", "Create media source"},
 		{"/media/sources/:id", "PUT", "Update media source"},
@@ -74,6 +80,7 @@ func ensureMediaModule(tx *gorm.DB, prefix string) error {
 		{"/media/items", "GET", "List collected media items"},
 		{"/media/items/:id", "GET", "Get collected media item"},
 		{"/media/runs", "GET", "List collection runs"},
+		mediaRunItemsEndpoint,
 		{"/media/runs/:id/cancel", "POST", "Cancel collection run"},
 		{"/media/schedules", "GET", "List collection schedules"},
 		{"/media/schedules/:id", "PUT", "Update collection schedule"},
@@ -82,6 +89,20 @@ func ensureMediaModule(tx *gorm.DB, prefix string) error {
 		{"/media/episodes/:id/check", "POST", "Probe playback address"},
 		{"/media/episodes/:id/stream", "GET", "Stream playback through the CMS"},
 	}
+	if err := ensureMediaAPIs(tx, prefix, adminCount > 0, endpoints); err != nil {
+		return err
+	}
+	if err := tx.AutoMigrate(
+		&media.Source{}, &media.Item{}, &media.SourceItem{}, &media.PlayLine{},
+		&media.PlayEpisode{}, &media.CollectionRun{}, &media.CollectionPageFailure{}, &media.HealthCheck{},
+		&media.CollectionSchedule{}, &media.CollectionRunItem{},
+	); err != nil {
+		return err
+	}
+	return seedMediaSources(tx)
+}
+
+func ensureMediaAPIs(tx *gorm.DB, prefix string, grantAdmin bool, endpoints []mediaEndpoint) error {
 	for _, endpoint := range endpoints {
 		api := model.SysApi{
 			Path:   strings.TrimRight(prefix, "/") + endpoint.suffix,
@@ -90,7 +111,7 @@ func ensureMediaModule(tx *gorm.DB, prefix string) error {
 		if err := tx.Where("path = ? AND method = ?", api.Path, api.Method).FirstOrCreate(&api).Error; err != nil {
 			return err
 		}
-		if adminCount == 0 {
+		if !grantAdmin {
 			continue
 		}
 		if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.SysAuthorityApi{AuthorityId: 1, ApiId: api.ID}).Error; err != nil {
@@ -101,14 +122,30 @@ func ensureMediaModule(tx *gorm.DB, prefix string) error {
 			return err
 		}
 	}
-	if err := tx.AutoMigrate(
-		&media.Source{}, &media.Item{}, &media.SourceItem{}, &media.PlayLine{},
-		&media.PlayEpisode{}, &media.CollectionRun{}, &media.CollectionPageFailure{}, &media.HealthCheck{},
-		&media.CollectionSchedule{},
-	); err != nil {
+	return nil
+}
+
+// applyMediaRunItems upgrades an installed edition without re-seeding its menus
+// or grants: it adds the run item log and its endpoint, and moves untouched
+// weekly full-collection defaults to the monthly default.
+func applyMediaRunItems(tx *gorm.DB, prefix string) error {
+	if err := tx.AutoMigrate(&media.CollectionRunItem{}); err != nil {
 		return err
 	}
-	return seedMediaSources(tx)
+	var adminCount int64
+	if err := tx.Model(&model.SysAuthority{}).Where("authority_id = ?", 1).Count(&adminCount).Error; err != nil {
+		return err
+	}
+	if err := ensureMediaAPIs(tx, prefix, adminCount > 0, []mediaEndpoint{mediaRunItemsEndpoint}); err != nil {
+		return err
+	}
+	schedule, err := cron.ParseStandard("CRON_TZ=Asia/Shanghai " + media.DefaultFullCron)
+	if err != nil {
+		return err
+	}
+	return tx.Model(&media.CollectionSchedule{}).
+		Where("kind = ? AND cron = ? AND enabled = ? AND last_run_at IS NULL", "full", "30 3 * * 0", false).
+		Updates(map[string]any{"cron": media.DefaultFullCron, "next_run_at": schedule.Next(time.Now())}).Error
 }
 
 func seedMediaSources(tx *gorm.DB) error {

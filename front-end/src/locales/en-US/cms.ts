@@ -522,4 +522,43 @@ export default {
   'cms.unableToSwitchRoles': 'Unable to switch roles',
   'cms.switchRole': 'Switch role',
   'cms.signOut': 'Sign out',
+  'cms.media.runs.allModes': 'All types',
+  'cms.media.runItems.title': 'Collected titles',
+  'cms.media.runItems.all': 'All {count}',
+  'cms.media.runItems.inserted': 'New {count}',
+  'cms.media.runItems.updated': 'Updated {count}',
+  'cms.media.runItems.failed': 'Failed {count}',
+  'cms.media.runItems.action.inserted': 'New',
+  'cms.media.runItems.action.updated': 'Updated',
+  'cms.media.runItems.action.failed': 'Failed',
+  'cms.media.runItems.externalId': 'Source item ID: {id}',
+  'cms.media.runItems.empty': 'This run did not add, update or fail any titles',
+  'cms.media.runItems.loadFailed': 'Unable to load the collected titles',
+  'cms.media.runItems.legacy':
+    'This run predates title logging; only its counters are available.',
+  'cms.media.schedules.guideTitle':
+    'Recommended: build the library with one full run, then keep it current with incremental runs',
+  'cms.media.schedules.guideFull':
+    'After deployment, click Run now on Full collection to traverse the whole catalogue. It resumes from checkpoints; follow progress in the collection log.',
+  'cms.media.schedules.guideIncremental':
+    'Then enable the incremental schedule (every 3 hours by default). It continues from when the full run started and only processes new or changed titles.',
+  'cms.media.schedules.guideCalibrate':
+    'The full schedule is a low-frequency calibration, monthly on day 1 by default. Only a complete full run without errors marks removed titles.',
+  'cms.media.schedules.runNow': 'Run now',
+  'cms.media.schedules.confirmFull': 'Start a full collection now?',
+  'cms.media.schedules.confirmFullDetail':
+    'It traverses the whole catalogue and may take hours. Follow or cancel it in the collection log; collected data is kept.',
+  'cms.media.schedules.confirmIncremental':
+    'Run an incremental collection now?',
+  'cms.media.schedules.confirmIncrementalDetail':
+    'Reads titles added or changed since the last successful run.',
+  'cms.media.schedules.queued': 'Queued for collection.',
+  'cms.media.schedules.viewLog': 'View collection log',
+  'cms.media.schedules.queueFailed': 'Unable to queue the run',
+  'cms.media.schedules.sourceDisabled': 'The source is disabled',
+  'cms.media.schedules.fullNotAllowed':
+    'Enable “Allow full collection” for this source first',
+  'cms.media.schedule.monthly': 'Monthly on day 1 · 03:30',
+  'cms.media.sources.fullEnabledHint':
+    'Once enabled, run or schedule full collections from Collection schedules',
 } satisfies Record<keyof typeof zh, string>;

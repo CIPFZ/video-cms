@@ -166,8 +166,21 @@ func (s *Service) fetchDetails(ctx context.Context, src Source, ids []string) ([
 	}
 	return decodeRecords(body, "json")
 }
+
+// volatileFields are view and vote counters that upstream sites bump on every
+// visit; they would otherwise mark unchanged titles as updated.
+var volatileFields = []string{"vod_hits", "vod_hits_day", "vod_hits_week", "vod_hits_month", "vod_time_hits",
+	"vod_up", "vod_down", "vod_score", "vod_score_all", "vod_score_num"}
+
 func hashRecord(r rawRecord) string {
-	b, _ := json.Marshal(r)
+	stable := make(rawRecord, len(r))
+	for k, v := range r {
+		stable[k] = v
+	}
+	for _, k := range volatileFields {
+		delete(stable, k)
+	}
+	b, _ := json.Marshal(stable)
 	h := sha256.Sum256(b)
 	return hex.EncodeToString(h[:])
 }

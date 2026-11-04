@@ -41,6 +41,7 @@ export type SourcePlayback = { source: MediaSource; sourceItem: { id: number; ex
 export type MediaDetail = { item: MediaItem; playbacks: SourcePlayback[] };
 export type CollectionPageFailure = { id: number; page: number; attempts: number; errorMessage: string };
 export type CollectionRun = { id: number; sourceId: number; mode: string; status: string; startedAt: string; finishedAt?: string; pages: number; nextPage: number; maxItems: number; maxPages: number; fetched: number; insertedCount: number; updatedCount: number; skippedCount: number; errorCount: number; errorMessage?: string; pageFailures?: CollectionPageFailure[] };
+export type CollectionRunItem = { id: number; collectionRunId: number; action: 'inserted' | 'updated' | 'failed'; itemId?: number; externalId: string; title: string; errorMessage?: string };
 export type Schedule = { id: number; sourceId: number; kind: string; enabled: boolean; cron: string; nextRunAt: string; lastRunAt?: string; lastStatus?: string; lastError?: string };
 type API<T> = { code: number; msg?: string; data: T };
 const base = '/api/v1/media';
@@ -54,6 +55,7 @@ export const listMediaItems = (page = 1, query = '', mediaType = '') => request<
 export const getMediaItem = (id: number) => request<API<MediaDetail>>(base + '/items/' + id);
 export type RunQuery = { page: number; pageSize: number; sourceId?: number; mode?: string; status?: string };
 export const listCollectionRuns = (params: RunQuery) => request<API<{ list: CollectionRun[]; total: number; summary: Record<string, number> }>>(base + '/runs', { params });
+export const listCollectionRunItems = (id: number, params: { page: number; pageSize: number; action?: string }) => request<API<{ list: CollectionRunItem[]; total: number; summary: Record<string, number> }>>(base + '/runs/' + id + '/items', { params });
 export const cancelCollectionRun = (id: number) => request<API<null>>(base + '/runs/' + id + '/cancel', { method: 'POST' });
 export const listMediaSchedules = () => request<API<Schedule[]>>(base + '/schedules');
 export const updateMediaSchedule = (id: number, data: Pick<Schedule, 'cron' | 'enabled'>) => request<API<null>>(base + '/schedules/' + id, { method: 'PUT', data });

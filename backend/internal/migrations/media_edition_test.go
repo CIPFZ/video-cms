@@ -4,6 +4,7 @@ import (
 	"context"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/CIPFZ/video-cms/internal/core/config"
 	"github.com/CIPFZ/video-cms/internal/modules/media"
@@ -85,4 +86,47 @@ func TestMediaEditionRejectsCombinedDatabaseBeforeMigration(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMediaRunItemsUpgradeKeepsGrantsAndEditedSchedules(t *testing.T) {
+	db := editionTestDB(t)
+	t.Setenv("SEED_ADMIN_ENABLED", "true")
+	t.Setenv("SEED_ADMIN_PASSWORD", "migration-password")
+	cfg := &config.Config{System: config.System{Environment: "dev", RouterPrefix: "/custom"}}
+	require.NoError(t, Run(context.Background(), db, cfg, zap.NewNop()))
+	require.True(t, db.Migrator().HasTable(&media.CollectionRunItem{}))
+
+	// Recreate an installation from before the run item step.
+	var sources []media.Source
+	require.NoError(t, db.Order("id").Find(&sources).Error)
+	require.GreaterOrEqual(t, len(sources), 2)
+	weekly := func(sourceID uint, enabled bool) media.CollectionSchedule {
+		row := media.CollectionSchedule{SourceID: sourceID, Kind: "full", Cron: "30 3 * * 0", NextRunAt: time.Now()}
+		require.NoError(t, db.Create(&row).Error)
+		require.NoError(t, db.Model(&row).Update("enabled", enabled).Error)
+		return row
+	}
+	untouched, edited := weekly(sources[0].ID, false), weekly(sources[1].ID, true)
+	var listSources model.SysApi
+	require.NoError(t, db.Where("path = ? AND method = ?", "/custom/media/sources", "GET").First(&listSources).Error)
+	require.NoError(t, db.Where("api_id = ? AND authority_id = ?", listSources.ID, 1).Delete(&model.SysAuthorityApi{}).Error)
+	require.NoError(t, db.Where("name = ?", Latest).Delete(&schemaMigration{}).Error)
+	require.NoError(t, db.Migrator().DropTable(&media.CollectionRunItem{}))
+
+	require.NoError(t, Run(context.Background(), db, cfg, zap.NewNop()))
+	require.NoError(t, Check(db))
+	require.True(t, db.Migrator().HasTable(&media.CollectionRunItem{}))
+	var items model.SysApi
+	require.NoError(t, db.Where("path = ? AND method = ?", "/custom/media/runs/:id/items", "GET").First(&items).Error)
+	require.NoError(t, db.Where("api_id = ? AND authority_id = ?", items.ID, 1).First(&model.SysAuthorityApi{}).Error)
+	require.NoError(t, db.Where("ptype = ? AND v0 = ? AND v1 = ? AND v2 = ?", "p", "1", items.Path, "GET").First(&model.SysCasbinRule{}).Error)
+	var count int64
+	require.NoError(t, db.Model(&model.SysAuthorityApi{}).Where("api_id = ? AND authority_id = ?", listSources.ID, 1).Count(&count).Error)
+	require.Zero(t, count, "revoked grants stay revoked")
+
+	require.NoError(t, db.First(&untouched, untouched.ID).Error)
+	require.Equal(t, media.DefaultFullCron, untouched.Cron)
+	require.True(t, untouched.NextRunAt.After(time.Now()))
+	require.NoError(t, db.First(&edited, edited.ID).Error)
+	require.Equal(t, "30 3 * * 0", edited.Cron)
 }

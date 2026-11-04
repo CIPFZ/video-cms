@@ -123,14 +123,14 @@ func categoryAllowed(src Source, r rawRecord) bool {
 	}
 	return !matches(src.DenyCategories) && (strings.TrimSpace(src.AllowCategories) == "" || matches(src.AllowCategories))
 }
-func (s *Service) saveRecord(ctx context.Context, src Source, r rawRecord, listHash string) (string, error) {
+func (s *Service) saveRecord(ctx context.Context, src Source, r rawRecord, listHash string) (string, uint, error) {
 	if !categoryAllowed(src, r) {
-		return "skipped", nil
+		return "skipped", 0, nil
 	}
 	title := clipped(firstString(r, "vod_name"), 500)
 	externalID := firstString(r, "vod_id")
 	if title == "" || externalID == "" || len(externalID) > 100 {
-		return "", errors.New("条目缺少标题或稳定 ID")
+		return "", 0, errors.New("条目缺少标题或稳定 ID")
 	}
 	kind := mapMediaType(firstString(r, "type_name"))
 	year := clipped(firstString(r, "vod_year"), 20)
@@ -153,6 +153,7 @@ func (s *Service) saveRecord(ctx context.Context, src Source, r rawRecord, listH
 		incoming.CoverURL = ""
 	}
 	result := "updated"
+	var itemID uint
 	now := time.Now()
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var link SourceItem
@@ -178,6 +179,7 @@ func (s *Service) saveRecord(ctx context.Context, src Source, r rawRecord, listH
 				return e
 			}
 		}
+		itemID = item.ID
 		canUpdate := item.MetadataSourceID == src.ID || item.MetadataSourceID == 0
 		if !canUpdate {
 			var owner Source
@@ -219,7 +221,7 @@ func (s *Service) saveRecord(ctx context.Context, src Source, r rawRecord, listH
 		}
 		return savePlayback(tx, link.ID, r)
 	})
-	return result, err
+	return result, itemID, err
 }
 func splitValues(v string) []string { return strings.Split(v, "$$$") }
 func splitEpisode(v string) (string, string) {

@@ -108,6 +108,21 @@ func (a *API) ListRuns(c *gin.Context) {
 	}
 	response.OkWithData(v, c)
 }
+func (a *API) ListRunItems(c *gin.Context) {
+	id, ok := parseUintID(c.Param("id"))
+	if !ok {
+		response.FailWithMessage("任务 ID 无效", c)
+		return
+	}
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	size, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+	v, e := a.service.ListRunItems(c.Request.Context(), id, c.Query("action"), page, size)
+	if e != nil {
+		response.FailWithMessage("获取采集明细失败", c)
+		return
+	}
+	response.OkWithData(v, c)
+}
 func (a *API) CancelRun(c *gin.Context) {
 	id, ok := parseUintID(c.Param("id"))
 	if !ok {

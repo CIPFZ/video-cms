@@ -154,6 +154,20 @@ type CollectionPageFailure struct {
 
 func (CollectionPageFailure) TableName() string { return "media_collection_page_failures" }
 
+// CollectionRunItem records what one collection run inserted, updated or failed
+// to save, so the log can show the affected titles rather than only counts.
+type CollectionRunItem struct {
+	Base
+	CollectionRunID uint   `json:"collectionRunId" gorm:"index:idx_media_run_item,priority:1;not null"`
+	Action          string `json:"action" gorm:"size:20;index:idx_media_run_item,priority:2;not null"` // inserted, updated, failed
+	ItemID          *uint  `json:"itemId"`
+	ExternalID      string `json:"externalId" gorm:"size:100"`
+	Title           string `json:"title" gorm:"size:500"`
+	ErrorMessage    string `json:"errorMessage,omitempty" gorm:"type:text"`
+}
+
+func (CollectionRunItem) TableName() string { return "media_collection_run_items" }
+
 type HealthCheck struct {
 	Base
 	SourceID      uint      `json:"sourceId" gorm:"index;not null"`

@@ -38,3 +38,11 @@ func TestNormalizeGenresFromMacCMSFields(t *testing.T) {
 func TestNormalizeGenresSupportsAlternateFields(t *testing.T) {
 	require.Equal(t, "科幻,冒险", recordGenres(rawRecord{"vod_tags": "科幻、冒险"}))
 }
+
+func TestHashRecordIgnoresViewCounters(t *testing.T) {
+	base := rawRecord{"vod_id": "1", "vod_name": "测试电影", "vod_hits": "178", "vod_score": "8.0"}
+	bumped := rawRecord{"vod_id": "1", "vod_name": "测试电影", "vod_hits": "179", "vod_score": "8.1"}
+	require.Equal(t, hashRecord(base), hashRecord(bumped))
+	require.Equal(t, "178", base["vod_hits"], "the caller's record is not modified")
+	require.NotEqual(t, hashRecord(base), hashRecord(rawRecord{"vod_id": "1", "vod_name": "测试电影 第二季", "vod_hits": "178"}))
+}

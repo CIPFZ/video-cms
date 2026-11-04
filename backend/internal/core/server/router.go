@@ -58,6 +58,7 @@ func InitRouters(svcCtx *svc.ServiceContext) *gin.Engine {
 		mediaWrite.POST("/:id/health", mediaAPI.Health)
 		mediaWrite.POST("/:id/collect", mediaAPI.Enqueue)
 		privateGroup.GET("/media/runs", mediaAPI.ListRuns)
+		privateGroup.GET("/media/runs/:id/items", mediaAPI.ListRunItems)
 		privateGroup.POST("/media/runs/:id/cancel", mediaAPI.CancelRun)
 		privateGroup.GET("/media/schedules", mediaAPI.ListSchedules)
 		privateGroup.PUT("/media/schedules/:id", mediaAPI.UpdateSchedule)

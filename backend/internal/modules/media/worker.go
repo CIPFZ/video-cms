@@ -11,11 +11,17 @@ import (
 	"gorm.io/gorm/clause"
 	"strconv"
 	"time"
+	// Schedules use Beijing time even where the host has no zoneinfo database.
+	_ "time/tzdata"
 )
 
 var errBusy = errors.New("来源已有任务正在运行")
 
 const pageRetryAttempts = 3
+
+// DefaultFullCron runs the catalogue calibration monthly; the first full
+// collection after deployment is started manually from the schedule page.
+const DefaultFullCron = "30 3 1 * *"
 
 func leaseToken() string { b := make([]byte, 16); _, _ = rand.Read(b); return hex.EncodeToString(b) }
 func (s *Service) withSource(ctx context.Context, id uint, fn func(context.Context, Source) error) error {
@@ -39,7 +45,7 @@ func (s *Service) withSource(ctx context.Context, id uint, fn func(context.Conte
 }
 func seedSchedules(tx *gorm.DB, id uint) error {
 	now := time.Now()
-	for kind, spec := range map[string]string{"health": "*/20 * * * *", "incremental": "15 */3 * * *", "full": "30 3 * * 0"} {
+	for kind, spec := range map[string]string{"health": "*/20 * * * *", "incremental": "15 */3 * * *", "full": DefaultFullCron} {
 		schedule, _ := cron.ParseStandard("CRON_TZ=Asia/Shanghai " + spec)
 		row := CollectionSchedule{SourceID: id, Kind: kind, Cron: spec, Enabled: true, NextRunAt: schedule.Next(now)}
 		if e := tx.Where("source_id = ? AND kind = ?", id, kind).FirstOrCreate(&row).Error; e != nil {
@@ -105,7 +111,7 @@ func (s *Service) Enqueue(ctx context.Context, id uint, opt CollectOptions) (Col
 	if opt.Mode == "" {
 		opt.Mode = "sample"
 	}
-	if opt.Mode != "sample" && opt.Mode != "incremental" && opt.Mode != "full" && opt.Mode != "health" {
+	if opt.Mode != "sample" && opt.Mode != "incremental" && opt.Mode != "full" {
 		return run, errors.New("不支持的任务类型")
 	}
 	if opt.MaxItems <= 0 || opt.MaxItems > 1000 {
@@ -122,7 +128,7 @@ func (s *Service) Enqueue(ctx context.Context, id uint, opt CollectOptions) (Col
 		if !src.Enabled {
 			return errors.New("来源已停用")
 		}
-		if src.Suspended && opt.Mode != "health" {
+		if src.Suspended {
 			return errors.New("来源已自动暂停，健康检查连续成功后恢复")
 		}
 		if opt.Mode == "full" && !src.FullEnabled {
@@ -222,11 +228,13 @@ func (s *Service) tick(ctx context.Context) {
 			if r.Error != nil || r.RowsAffected != 1 {
 				continue
 			}
-			_, e = s.Enqueue(ctx, sch.SourceID, CollectOptions{Mode: sch.Kind, MaxItems: 1000, MaxPages: 100})
-			status, msg := "queued", ""
-			if e != nil {
-				status = "skipped"
-				msg = e.Error()
+			var status, msg string
+			if sch.Kind == "health" {
+				status, msg = s.scheduledHealthCheck(ctx, sch.SourceID)
+			} else if _, e = s.Enqueue(ctx, sch.SourceID, CollectOptions{Mode: sch.Kind, MaxItems: 1000, MaxPages: 100}); e != nil {
+				status, msg = "skipped", e.Error()
+			} else {
+				status = "queued"
 			}
 			s.db.WithContext(ctx).Model(&sch).Updates(map[string]any{"last_status": status, "last_error": msg})
 		}
@@ -248,13 +256,36 @@ func (s *Service) tick(ctx context.Context) {
 		ids = nil
 		s.db.Model(&CollectionRun{}).Where("finished_at < ? AND status NOT IN ?", now.AddDate(0, 0, -30), []string{"running", "queued"}).Limit(500).Pluck("id", &ids)
 		if len(ids) > 0 {
+			s.db.Where("collection_run_id IN ?", ids).Delete(&CollectionRunItem{})
+			s.db.Where("collection_run_id IN ?", ids).Delete(&CollectionPageFailure{})
 			s.db.Where("id IN ?", ids).Delete(&CollectionRun{})
 		}
 	}
 }
+
+// scheduledHealthCheck records the probe in the health history only; it is
+// not a collection run and does not appear in the collection log.
+func (s *Service) scheduledHealthCheck(ctx context.Context, sourceID uint) (string, string) {
+	src, e := s.GetSource(ctx, sourceID)
+	if e != nil {
+		return "skipped", e.Error()
+	}
+	if !src.Enabled {
+		return "skipped", "来源已停用"
+	}
+	check, e := s.HealthCheck(ctx, sourceID)
+	switch {
+	case e != nil:
+		return "skipped", e.Error()
+	case check.Result != "ok":
+		return "failed", check.ErrorMessage
+	}
+	return "success", ""
+}
 func (s *Service) execute(ctx context.Context, run *CollectionRun) {
 	status := "success"
 	var err error
+	// Health checks are recorded in their own history; this only drains runs queued before that change.
 	if run.Mode == "health" {
 		var check HealthCheck
 		check, err = s.HealthCheck(ctx, run.SourceID)
@@ -364,10 +395,12 @@ func (s *Service) collectPages(ctx context.Context, src Source, run *CollectionR
 		}
 		wanted := []string{}
 		hashes := map[string]string{}
+		titles := map[string]string{}
 		for _, r := range records {
 			id := firstString(r, "vod_id")
 			hash := hashRecord(r)
 			hashes[id] = hash
+			titles[id] = firstString(r, "vod_name")
 			run.Fetched++
 			if !categoryAllowed(src, r) {
 				run.SkippedCount++
@@ -396,6 +429,10 @@ func (s *Service) collectPages(ctx context.Context, src Source, run *CollectionR
 				return e
 			}
 			returned := map[string]bool{}
+			logged := []CollectionRunItem{}
+			entry := func(id, action string, itemID *uint, message string) CollectionRunItem {
+				return CollectionRunItem{CollectionRunID: run.ID, Action: action, ItemID: itemID, ExternalID: clipped(id, 100), Title: clipped(titles[id], 500), ErrorMessage: message}
+			}
 			for _, r := range details {
 				id := firstString(r, "vod_id")
 				hash, ok := hashes[id]
@@ -403,17 +440,20 @@ func (s *Service) collectPages(ctx context.Context, src Source, run *CollectionR
 					continue
 				}
 				returned[id] = true
-				outcome, e := s.saveRecord(ctx, src, r, hash)
+				outcome, itemID, e := s.saveRecord(ctx, src, r, hash)
 				if e != nil {
 					run.ErrorCount++
 					run.ErrorMessage = fmt.Sprintf("条目 %s 保存失败: %v", id, e)
+					logged = append(logged, entry(id, "failed", nil, "保存失败: "+e.Error()))
 					continue
 				}
 				switch outcome {
 				case "inserted":
 					run.InsertedCount++
+					logged = append(logged, entry(id, "inserted", &itemID, ""))
 				case "updated":
 					run.UpdatedCount++
+					logged = append(logged, entry(id, "updated", &itemID, ""))
 				default:
 					run.SkippedCount++
 				}
@@ -422,6 +462,12 @@ func (s *Service) collectPages(ctx context.Context, src Source, run *CollectionR
 				if !returned[id] {
 					run.ErrorCount++
 					run.ErrorMessage = "来源详情响应缺少请求的 ID"
+					logged = append(logged, entry(id, "failed", nil, "来源详情响应缺少该条目"))
+				}
+			}
+			if len(logged) > 0 {
+				if e := s.db.WithContext(ctx).CreateInBatches(logged, 100).Error; e != nil {
+					return e
 				}
 			}
 		}
@@ -437,7 +483,12 @@ func (s *Service) collectPages(ctx context.Context, src Source, run *CollectionR
 						return e
 					}
 				}
-				if e := s.db.WithContext(ctx).Model(&src).Updates(map[string]any{"next_page": 0, "full_started_at": nil, "full_had_errors": false}).Error; e != nil {
+				finished := map[string]any{"next_page": 0, "full_started_at": nil, "full_had_errors": false}
+				// The next incremental run continues from the start of this traversal.
+				if src.FullStartedAt != nil && (src.LastIncrementalAt == nil || src.LastIncrementalAt.Before(*src.FullStartedAt)) {
+					finished["last_incremental_at"] = *src.FullStartedAt
+				}
+				if e := s.db.WithContext(ctx).Model(&src).Updates(finished).Error; e != nil {
 					return e
 				}
 			} else {

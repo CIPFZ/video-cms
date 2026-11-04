@@ -488,4 +488,39 @@ export default {
   'cms.unableToSwitchRoles': '切换失败',
   'cms.switchRole': '切换角色',
   'cms.signOut': '退出登录',
+  'cms.media.runs.allModes': '全部类型',
+  'cms.media.runItems.title': '采集明细',
+  'cms.media.runItems.all': '全部 {count}',
+  'cms.media.runItems.inserted': '新增 {count}',
+  'cms.media.runItems.updated': '更新 {count}',
+  'cms.media.runItems.failed': '失败 {count}',
+  'cms.media.runItems.action.inserted': '新增',
+  'cms.media.runItems.action.updated': '更新',
+  'cms.media.runItems.action.failed': '失败',
+  'cms.media.runItems.externalId': '站点条目 ID：{id}',
+  'cms.media.runItems.empty': '本次任务没有新增、更新或失败的条目',
+  'cms.media.runItems.loadFailed': '采集明细加载失败',
+  'cms.media.runItems.legacy': '该任务早于采集明细功能，仅保留统计数字。',
+  'cms.media.schedules.guideTitle': '建议流程：先全量建库，再用增量日常更新',
+  'cms.media.schedules.guideFull':
+    '部署后点击全量采集的“立即执行”，遍历整个站点目录建库；可从断点继续，进度在采集日志查看。',
+  'cms.media.schedules.guideIncremental':
+    '全量完成后启用增量计划（默认每 3 小时），增量会从全量开始的时间接续，只处理新增和变化的条目。',
+  'cms.media.schedules.guideCalibrate':
+    '全量计划用于低频校准，默认每月 1 日执行；完整且无错误的全量才会标记已下架资源。',
+  'cms.media.schedules.runNow': '立即执行',
+  'cms.media.schedules.confirmFull': '立即开始全量采集？',
+  'cms.media.schedules.confirmFullDetail':
+    '将遍历整个站点目录，可能持续数小时。可在采集日志查看进度或取消，已采集的数据会保留。',
+  'cms.media.schedules.confirmIncremental': '立即执行一次增量采集？',
+  'cms.media.schedules.confirmIncrementalDetail':
+    '读取上次成功采集之后的新增和更新。',
+  'cms.media.schedules.queued': '已加入采集队列。',
+  'cms.media.schedules.viewLog': '查看采集日志',
+  'cms.media.schedules.queueFailed': '任务排队失败',
+  'cms.media.schedules.sourceDisabled': '站点已停用',
+  'cms.media.schedules.fullNotAllowed': '请先在资源站点中开启“允许全量采集”',
+  'cms.media.schedule.monthly': '每月 1 日 · 03:30',
+  'cms.media.sources.fullEnabledHint':
+    '开启后可在采集计划中立即执行全量采集或设置周期',
 };
