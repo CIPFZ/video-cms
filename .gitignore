@@ -16,6 +16,7 @@ Thumbs.db
 *.tmp
 *.temp
 .tmp_*
+/tmp/
 backend/.git_nested_backup/
 front-end/.git_nested_backup/
 
