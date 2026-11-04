@@ -16,7 +16,7 @@ const Settings: ProLayoutProps & {
   fixSiderbar: true,
   colorWeak: false,
   // 设置标题的 title
-  title: 'GoWebFrame',
+  title: '影视 CMS',
   // 修改左上角的 logo
   logo: '/logo.svg',
   pwa: true,

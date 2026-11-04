@@ -3,8 +3,8 @@ package observability
 import (
 	"context"
 	"fmt"
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	"github.com/CIPFZ/gowebframe/pkg/utils"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	"github.com/CIPFZ/video-cms/pkg/utils"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"time"

@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/CIPFZ/gowebframe/internal/core/claims"
+	"github.com/CIPFZ/video-cms/internal/core/claims"
 	"strconv"
 
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 
 	"gorm.io/gorm"
 )

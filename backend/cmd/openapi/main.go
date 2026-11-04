@@ -3,9 +3,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	"github.com/CIPFZ/gowebframe/internal/core/server"
-	"github.com/CIPFZ/gowebframe/internal/svc"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/server"
+	"github.com/CIPFZ/video-cms/internal/svc"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"os"
@@ -44,7 +44,7 @@ func main() {
 		}
 		methods[strings.ToLower(route.Method)] = op
 	}
-	spec := map[string]any{"swagger": "2.0", "info": map[string]any{"title": "Base Frame API", "version": "1.0", "description": "Routes generated from the backend router; request fields generated from system DTOs. Responses use the CMS envelope."}, "basePath": "/api/v1", "paths": paths, "securityDefinitions": map[string]any{"ApiTokenAuth": map[string]any{"type": "apiKey", "name": "X-API-Token", "in": "header"}, "ApiKeyAuth": map[string]any{"type": "apiKey", "name": "x-token", "in": "header"}}, "definitions": map[string]any{"Response": map[string]any{"type": "object", "required": []string{"code"}, "properties": map[string]any{"code": map[string]any{"type": "integer"}, "msg": map[string]any{"type": "string"}, "data": map[string]any{}}}}}
+	spec := map[string]any{"swagger": "2.0", "info": map[string]any{"title": "Video CMS API", "version": "1.0", "description": "Routes generated from the backend router; request fields generated from system DTOs. Responses use the CMS envelope."}, "basePath": "/api/v1", "paths": paths, "securityDefinitions": map[string]any{"ApiTokenAuth": map[string]any{"type": "apiKey", "name": "X-API-Token", "in": "header"}, "ApiKeyAuth": map[string]any{"type": "apiKey", "name": "x-token", "in": "header"}}, "definitions": map[string]any{"Response": map[string]any{"type": "object", "required": []string{"code"}, "properties": map[string]any{"code": map[string]any{"type": "integer"}, "msg": map[string]any{"type": "string"}, "data": map[string]any{}}}}}
 	data, err := json.MarshalIndent(spec, "", "  ")
 	if err != nil {
 		panic(err)

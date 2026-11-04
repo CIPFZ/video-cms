@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"github.com/CIPFZ/gowebframe/pkg/utils"
+	"github.com/CIPFZ/video-cms/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/trace"

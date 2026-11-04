@@ -1,5 +1,5 @@
 export default {
-  'pages.layouts.userLayout.title': '轻量、可扩展的管理平台',
+  'pages.layouts.userLayout.title': '影视资源采集、管理与播放平台',
   'pages.login.accountLogin.tab': '账户密码登录',
   'pages.login.accountLogin.errorMessage': '用户名或密码错误',
   'pages.login.failure': '登录失败，请重试！',

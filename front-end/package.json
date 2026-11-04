@@ -1,9 +1,9 @@
 {
-  "name": "base-frame-web",
+  "name": "video-cms-web",
   "version": "6.0.0",
   "private": true,
-  "description": "Base Frame CMS frontend",
-  "repository": "git@github.com:CIPFZ/go-web-frame.git",
+  "description": "Video CMS frontend",
+  "repository": "git@github.com:CIPFZ/video-cms.git",
   "scripts": {
     "analyze": "cross-env ANALYZE=1 max build",
     "biome:lint": "npx @biomejs/biome lint",

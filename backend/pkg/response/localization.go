@@ -2,7 +2,7 @@ package response
 
 import (
 	"errors"
-	"github.com/CIPFZ/gowebframe/pkg/errcode"
+	"github.com/CIPFZ/video-cms/pkg/errcode"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"reflect"

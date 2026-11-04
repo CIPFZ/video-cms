@@ -3,8 +3,8 @@ package migrations
 import (
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/core/audit"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/core/audit"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 	"gorm.io/gorm"
 )
 

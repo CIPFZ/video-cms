@@ -77,7 +77,7 @@ func (s *Service) CheckEpisode(ctx context.Context, id uint) (map[string]any, er
 	if e != nil {
 		return nil, e
 	}
-	req.Header.Set("User-Agent", "GoWebFrame-MediaCollector/1.0")
+	req.Header.Set("User-Agent", "VideoCMS-MediaCollector/1.0")
 	start := time.Now()
 	status := "failed"
 	httpStatus := 0

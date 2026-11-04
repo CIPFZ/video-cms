@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/core/claims"
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/core/claims"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"

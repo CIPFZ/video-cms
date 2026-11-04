@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	tokenCore "github.com/CIPFZ/gowebframe/internal/core/token"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
-	"github.com/CIPFZ/gowebframe/internal/svc"
-	"github.com/CIPFZ/gowebframe/pkg/errcode"
-	"github.com/CIPFZ/gowebframe/pkg/response"
+	tokenCore "github.com/CIPFZ/video-cms/internal/core/token"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/svc"
+	"github.com/CIPFZ/video-cms/pkg/errcode"
+	"github.com/CIPFZ/video-cms/pkg/response"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

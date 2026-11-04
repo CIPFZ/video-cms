@@ -1,12 +1,12 @@
 package api
 
 import (
-	"github.com/CIPFZ/gowebframe/internal/modules/common"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/service"
-	"github.com/CIPFZ/gowebframe/internal/svc"
-	"github.com/CIPFZ/gowebframe/pkg/response"
-	"github.com/CIPFZ/gowebframe/pkg/utils"
+	"github.com/CIPFZ/video-cms/internal/modules/common"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/system/service"
+	"github.com/CIPFZ/video-cms/internal/svc"
+	"github.com/CIPFZ/video-cms/pkg/response"
+	"github.com/CIPFZ/video-cms/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

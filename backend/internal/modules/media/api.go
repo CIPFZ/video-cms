@@ -1,7 +1,7 @@
 package media
 
 import (
-	"github.com/CIPFZ/gowebframe/pkg/response"
+	"github.com/CIPFZ/video-cms/pkg/response"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )

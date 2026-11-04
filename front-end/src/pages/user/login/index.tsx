@@ -14,7 +14,6 @@ import React, { useState, useEffect } from 'react';
 import { flushSync } from 'react-dom';
 import { Footer, SelectLang } from '@/components';
 import { login, getPublicConfig } from '@/services/system/user';
-import Settings from '../../../../config/defaultSettings';
 const useStyles = createStyles(({ token }) => {
   return {
     action: {
@@ -164,7 +163,7 @@ const Login: React.FC = () => {
             id: 'menu.login',
             defaultMessage: '登录页',
           })}
-          {Settings.title && ` - ${Settings.title}`}
+          {` - ${intl.formatMessage({ id: 'cms.brandName' })}`}
         </title>
       </Helmet>
       <Lang />
@@ -180,7 +179,7 @@ const Login: React.FC = () => {
             maxWidth: '75vw',
           }}
           logo={<img alt="logo" src="/logo.svg" />}
-          title="Go Web Frame"
+          title={intl.formatMessage({ id: 'cms.brandName' })}
           subTitle={intl.formatMessage({
             id: 'pages.layouts.userLayout.title',
           })}

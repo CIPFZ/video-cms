@@ -212,7 +212,7 @@ export default function Workplace() {
           <div className={styles.welcome}>
             <div>
               <div className={styles.eyebrow}>
-                {t('cms.workOverviewBaseFrame')}
+                {t('cms.workOverviewBrand')}
               </div>
               <h1 className={styles.greeting}>
                 {t('cms.welcomeUser', { greeting, name: nickname })}

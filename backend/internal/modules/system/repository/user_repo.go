@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/CIPFZ/gowebframe/internal/core/claims"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/core/claims"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

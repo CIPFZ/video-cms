@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/CIPFZ/gowebframe/internal/modules/common"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/common"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
 	"reflect"
 	"strings"
 )

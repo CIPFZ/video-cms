@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/modules/common"
+	"github.com/CIPFZ/video-cms/internal/modules/common"
 )
 
 type SysApiToken struct {

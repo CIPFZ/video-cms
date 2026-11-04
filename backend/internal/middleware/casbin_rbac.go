@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"github.com/CIPFZ/gowebframe/pkg/errcode"
+	"github.com/CIPFZ/video-cms/pkg/errcode"
 	"strconv"
 
-	"github.com/CIPFZ/gowebframe/internal/core/claims"
-	"github.com/CIPFZ/gowebframe/internal/svc"
-	"github.com/CIPFZ/gowebframe/pkg/response"
+	"github.com/CIPFZ/video-cms/internal/core/claims"
+	"github.com/CIPFZ/video-cms/internal/svc"
+	"github.com/CIPFZ/video-cms/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 

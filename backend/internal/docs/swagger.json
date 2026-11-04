@@ -19,7 +19,7 @@
   },
   "info": {
     "description": "Routes generated from the backend router; request fields generated from system DTOs. Responses use the CMS envelope.",
-    "title": "Base Frame API",
+    "title": "Video CMS API",
     "version": "1.0"
   },
   "paths": {

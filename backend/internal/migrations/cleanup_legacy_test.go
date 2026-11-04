@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"

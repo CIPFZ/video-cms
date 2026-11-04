@@ -19,7 +19,7 @@ import {
 } from '@ant-design/icons';
 import { useStyles } from './styles';
 
-const repository = 'https://github.com/CIPFZ/go-web-frame/tree/base-frame';
+const repository = 'https://github.com/CIPFZ/video-cms/tree/main';
 
 export default function AboutPage() {
   useI18n();
@@ -113,7 +113,7 @@ export default function AboutPage() {
               </span>
               {t('cms.about.foundation')}
             </div>
-            <h1 id="about-title">Base Frame CMS</h1>
+            <h1 id="about-title">{t('cms.brandName')}</h1>
             <p className={styles.subtitle}>{t('cms.about.tagline')}</p>
             <p className={styles.description}>{t('cms.about.description')}</p>
             <Space size={12} wrap className={styles.actions}>
@@ -138,7 +138,7 @@ export default function AboutPage() {
             <div className={styles.branch}>
               <BranchesOutlined aria-hidden />
               <span>{t('cms.about.baseBranch')}</span>
-              <code>base-frame</code>
+              <code>main</code>
             </div>
           </div>
           <div

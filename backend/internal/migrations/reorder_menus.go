@@ -3,8 +3,8 @@ package migrations
 import (
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/seed"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/seed"
 	"gorm.io/gorm"
 )
 

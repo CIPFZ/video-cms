@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/CIPFZ/gowebframe/pkg/errcode"
+	"github.com/CIPFZ/video-cms/pkg/errcode"
 	"github.com/gin-gonic/gin"
 )
 

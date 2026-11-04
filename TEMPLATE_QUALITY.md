@@ -1,4 +1,4 @@
-# Base Frame 质量检查
+# 影视 CMS 质量检查
 
 版本、架构结论、已知限制见 [架构评审](docs/BASE_FRAME_REVIEW.md)。CI 配置为 [.github/workflows/ci.yml](.github/workflows/ci.yml)。新增 workflow 已在仓库中提供，远程 Actions 的执行结果需以 GitHub 为准。
 

@@ -1,9 +1,9 @@
 package router
 
 import (
-	"github.com/CIPFZ/gowebframe/internal/middleware"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/api"
-	"github.com/CIPFZ/gowebframe/internal/svc"
+	"github.com/CIPFZ/video-cms/internal/middleware"
+	"github.com/CIPFZ/video-cms/internal/modules/system/api"
+	"github.com/CIPFZ/video-cms/internal/svc"
 	"github.com/gin-gonic/gin"
 )
 

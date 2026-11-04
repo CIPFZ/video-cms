@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/core/session"
-	"github.com/CIPFZ/gowebframe/internal/svc"
-	"github.com/CIPFZ/gowebframe/pkg/errcode"
-	"github.com/CIPFZ/gowebframe/pkg/response"
-	"github.com/CIPFZ/gowebframe/pkg/utils"
+	"github.com/CIPFZ/video-cms/internal/core/session"
+	"github.com/CIPFZ/video-cms/internal/svc"
+	"github.com/CIPFZ/video-cms/pkg/errcode"
+	"github.com/CIPFZ/video-cms/pkg/response"
+	"github.com/CIPFZ/video-cms/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/core/audit"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
-	"github.com/CIPFZ/gowebframe/internal/svc"
-	"github.com/CIPFZ/gowebframe/pkg/utils"
+	"github.com/CIPFZ/video-cms/internal/core/audit"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/svc"
+	"github.com/CIPFZ/video-cms/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/trace"
 )

@@ -1,14 +1,14 @@
 package api
 
 import (
-	logger "github.com/CIPFZ/gowebframe/internal/core/log"
-	tokenCore "github.com/CIPFZ/gowebframe/internal/core/token"
-	"github.com/CIPFZ/gowebframe/internal/middleware"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/service"
-	"github.com/CIPFZ/gowebframe/internal/svc"
-	"github.com/CIPFZ/gowebframe/pkg/response"
+	logger "github.com/CIPFZ/video-cms/internal/core/log"
+	tokenCore "github.com/CIPFZ/video-cms/internal/core/token"
+	"github.com/CIPFZ/video-cms/internal/middleware"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/service"
+	"github.com/CIPFZ/video-cms/internal/svc"
+	"github.com/CIPFZ/video-cms/pkg/response"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

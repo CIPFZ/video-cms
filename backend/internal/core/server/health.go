@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/svc"
+	"github.com/CIPFZ/video-cms/internal/svc"
 	"github.com/gin-gonic/gin"
 )
 

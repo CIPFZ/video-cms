@@ -1,7 +1,7 @@
 package claims
 
 import (
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
 
 	"github.com/golang-jwt/jwt/v5"
 )

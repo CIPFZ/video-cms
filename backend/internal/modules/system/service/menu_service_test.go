@@ -3,7 +3,7 @@ package service
 import (
 	"testing"
 
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 )
 
 func TestBuildMenuTreePreservesGrandchildren(t *testing.T) {

@@ -2,13 +2,13 @@ package jwt
 
 import (
 	"context"
-	"github.com/CIPFZ/gowebframe/internal/core/claims"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/core/claims"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
 	jwtlib "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
 	"testing"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 	"go.uber.org/zap"
 )
 

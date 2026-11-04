@@ -1,5 +1,5 @@
 ﻿system:
-  name: GoWebFrame
+  name: VideoCMS
   environment: production
   port: 8080
   router_prefix: /api/v1
@@ -28,7 +28,7 @@ jwt:
   signing_key: CHANGE_ME_TO_A_STRONG_RANDOM_SECRET
   expires_time: 7d
   buffer_time: 1d
-  issuer: GoWebFrame
+  issuer: VideoCMS
 
 database:
   driver: mysql
@@ -109,7 +109,7 @@ email:
   from: noreply@example.com
   host: smtp.example.com
   secret: CHANGE_ME_EMAIL_SECRET
-  nickname: GoWebFrame
+  nickname: VideoCMS
   port: 465
   is_ssl: true
   is_loginauth: false
@@ -131,7 +131,7 @@ cors:
       allow_credentials: true
 
 observable:
-  service_name: gowebframe
+  service_name: video-cms
   service_version: 1.0.0
   exporter: none
   environment: production

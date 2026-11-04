@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/CIPFZ/gowebframe/internal/modules/common"
+import "github.com/CIPFZ/video-cms/internal/modules/common"
 
 // SearchApiReq API分页查询
 type SearchApiReq struct {

@@ -2,7 +2,7 @@ package observability
 
 import (
 	"context"
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 )

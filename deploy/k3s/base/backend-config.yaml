@@ -5,7 +5,7 @@ metadata:
 data:
   config.yaml: |
     system:
-      name: GoWebFrame
+      name: VideoCMS
       environment: production
       port: 8080
       router_prefix: /api/v1

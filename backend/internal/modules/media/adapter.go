@@ -90,7 +90,7 @@ func (s *Service) request(ctx context.Context, source Source, params url.Values)
 		return nil, 0, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "GoWebFrame-MediaCollector/1.0")
+	req.Header.Set("User-Agent", "VideoCMS-MediaCollector/1.0")
 	client := *s.client
 	client.Timeout = time.Duration(source.TimeoutSeconds) * time.Second
 	if client.Timeout <= 0 {

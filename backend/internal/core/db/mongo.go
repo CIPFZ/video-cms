@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 	"time"
 
 	"github.com/qiniu/qmgo"

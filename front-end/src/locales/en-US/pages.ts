@@ -1,6 +1,6 @@
 export default {
   'pages.layouts.userLayout.title':
-    'A lightweight, extensible administration platform',
+    'Collect, manage and watch video resources',
   'pages.login.accountLogin.tab': 'Account Login',
   'pages.login.accountLogin.errorMessage': 'Incorrect username or password',
   'pages.login.failure': 'Login failed, please try again!',

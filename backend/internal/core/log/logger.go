@@ -2,12 +2,12 @@ package logger
 
 import (
 	"context"
-	"github.com/CIPFZ/gowebframe/pkg/utils"
+	"github.com/CIPFZ/video-cms/pkg/utils"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/bridges/otelzap"

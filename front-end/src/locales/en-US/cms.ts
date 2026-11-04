@@ -1,21 +1,22 @@
 import type zh from '../zh-CN/cms';
 
 export default {
-  'cms.about.foundation': 'A foundation for your platform',
-  'cms.about.tagline': 'An extensible admin framework for teams',
+  'cms.brandName': 'Video CMS',
+  'cms.about.foundation': 'Video resource management',
+  'cms.about.tagline': 'Collect, manage and watch video resources',
   'cms.about.description':
-    'Manage accounts, permissions, navigation, APIs and notices in one shared foundation for different business applications.',
-  'cms.about.baseBranch': 'Foundation branch',
-  'cms.about.architecture': 'From foundation to application',
-  'cms.about.businessLayer': 'Your application',
-  'cms.about.extensible': 'Extend as needed',
+    'Manage sources, collection schedules, run logs and the media library, watch online, and control access with accounts, permissions and audit logs.',
+  'cms.about.baseBranch': 'Code branch',
+  'cms.about.architecture': 'System architecture',
+  'cms.about.businessLayer': 'Media features',
+  'cms.about.extensible': 'Collect and play',
   'cms.about.businessLayerDescription':
-    'Build domain modules and workflows in a dedicated branch.',
+    'Sources, collection schedules, media library and online playback.',
   'cms.about.sharedLayer': 'Shared admin capabilities',
   'cms.about.foundationLayer': 'API services · Data storage · Observability',
   'cms.about.architectureCaption':
-    'Reuse the foundation. Build your application.',
-  'cms.about.capabilities': 'Framework capabilities',
+    'From collection to online playback.',
+  'cms.about.capabilities': 'Admin capabilities',
   'cms.about.capabilitiesDescription':
     'Shared capabilities for team administration and everyday maintenance.',
   'cms.about.capabilitiesNote': 'Feature access follows role permissions',
@@ -168,7 +169,7 @@ export default {
   'cms.workplace': 'Workplace',
   'cms.startYourDayHere': 'Start your day here',
   'cms.workOverview': 'Work overview',
-  'cms.workOverviewBaseFrame': 'WORK OVERVIEW · BASE FRAME',
+  'cms.workOverviewBrand': 'WORK OVERVIEW · VIDEO CMS',
   'cms.yourToolsNoticesAndPlatformStatus':
     'Your tools, notices and platform status in one place.',
   'cms.year': 'Year',
@@ -244,7 +245,7 @@ export default {
     'Service availability and runtime overview',
   'cms.refreshStatus': 'Refresh status',
   'cms.overallPlatformStatus': 'Overall platform status',
-  'cms.serviceOverviewBaseFrame': 'SERVICE OVERVIEW · BASE FRAME',
+  'cms.serviceOverviewBrand': 'SERVICE OVERVIEW · VIDEO CMS',
   'cms.enabledServiceChecksAreHealthy':
     '{value0} / {value1} enabled service checks are healthy',
   'cms.connectingToTheBackend': 'Connecting to the backend',

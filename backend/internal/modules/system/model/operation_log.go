@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/CIPFZ/gowebframe/internal/modules/common"
+	"github.com/CIPFZ/video-cms/internal/modules/common"
 	"time"
 )
 

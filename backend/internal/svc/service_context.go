@@ -1,20 +1,20 @@
 package svc
 
 import (
-	"github.com/CIPFZ/gowebframe/internal/core/file"
-	"github.com/CIPFZ/gowebframe/internal/modules/media"
+	"github.com/CIPFZ/video-cms/internal/core/file"
+	"github.com/CIPFZ/video-cms/internal/modules/media"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/core/audit"
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	"github.com/CIPFZ/gowebframe/internal/core/i18n"
-	"github.com/CIPFZ/gowebframe/internal/core/jwt"
-	coretoken "github.com/CIPFZ/gowebframe/internal/core/token"
+	"github.com/CIPFZ/video-cms/internal/core/audit"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/i18n"
+	"github.com/CIPFZ/video-cms/internal/core/jwt"
+	coretoken "github.com/CIPFZ/video-cms/internal/core/token"
 
-	"github.com/CIPFZ/gowebframe/internal/core/claims"
-	"github.com/CIPFZ/gowebframe/internal/core/session"
+	"github.com/CIPFZ/video-cms/internal/core/claims"
+	"github.com/CIPFZ/video-cms/internal/core/session"
 	"github.com/gin-gonic/gin"
 	"github.com/qiniu/qmgo"
 	"github.com/redis/go-redis/v9"

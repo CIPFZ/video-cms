@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 
-	logger "github.com/CIPFZ/gowebframe/internal/core/log"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/repository"
-	"github.com/CIPFZ/gowebframe/internal/svc"
+	logger "github.com/CIPFZ/video-cms/internal/core/log"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/repository"
+	"github.com/CIPFZ/video-cms/internal/svc"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

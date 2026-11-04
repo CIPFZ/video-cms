@@ -35,7 +35,7 @@ export const Question: React.FC = () => {
   const locale = useI18n();
   return (
     <a
-      href="https://github.com/CIPFZ/go-web-frame"
+      href="https://github.com/CIPFZ/video-cms"
       target="_blank"
       rel="noreferrer"
       aria-label={t('cms.projectDocs')}

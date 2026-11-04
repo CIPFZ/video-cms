@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/nicksnyder/go-i18n/v2/i18n"

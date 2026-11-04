@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/repository"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/system/repository"
 )
 
 // ICasbinService 定义了 Casbin 权限管理的服务层接口

@@ -314,7 +314,7 @@ export default function SystemStatusPage() {
         >
           <div>
             <div className={styles.eyebrow}>
-              {t('cms.serviceOverviewBaseFrame')}
+              {t('cms.serviceOverviewBrand')}
             </div>
             <div className={styles.headline} role="status">
               {status || error ? (

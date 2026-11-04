@@ -5,7 +5,7 @@ import (
 	"net/textproto"
 	"testing"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 )
 
 func TestSanitizeUploadNameRemovesTraversal(t *testing.T) {

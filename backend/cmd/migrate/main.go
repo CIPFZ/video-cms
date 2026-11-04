@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	"github.com/CIPFZ/gowebframe/internal/core/db"
-	"github.com/CIPFZ/gowebframe/internal/migrations"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/db"
+	"github.com/CIPFZ/video-cms/internal/migrations"
 	"go.uber.org/zap"
 	"log"
 	"time"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/repository"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/repository"
 	"github.com/stretchr/testify/require"
 )
 

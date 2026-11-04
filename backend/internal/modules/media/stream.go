@@ -45,7 +45,7 @@ func (a *API) StreamEpisode(c *gin.Context) {
 		c.Status(http.StatusBadGateway)
 		return
 	}
-	req.Header.Set("User-Agent", "GoWebFrame-MediaPlayer/1.0")
+	req.Header.Set("User-Agent", "VideoCMS-MediaPlayer/1.0")
 	req.Header.Set("Referer", rootURL.String())
 	if rangeHeader := c.GetHeader("Range"); rangeHeader != "" {
 		req.Header.Set("Range", rangeHeader)

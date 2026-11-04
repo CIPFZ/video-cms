@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/CIPFZ/gowebframe/internal/modules/common"
+import "github.com/CIPFZ/video-cms/internal/modules/common"
 
 type SearchApiTokenReq struct {
 	Name    string `json:"name" form:"name"`

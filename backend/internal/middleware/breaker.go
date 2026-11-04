@@ -3,7 +3,7 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"github.com/CIPFZ/gowebframe/pkg/response"
+	"github.com/CIPFZ/video-cms/pkg/response"
 	"net/http"
 	"time"
 

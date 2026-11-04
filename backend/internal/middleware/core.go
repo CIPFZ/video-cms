@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 
 	"github.com/gin-gonic/gin"
 )

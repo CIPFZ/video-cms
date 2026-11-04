@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

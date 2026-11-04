@@ -41,7 +41,7 @@ def main():
     runtime = ROOT / 'runtime'
     runtime.mkdir(mode=0o700, exist_ok=True)
     config = {
-        'system': {'allow_registration': False, 'trusted_proxies': ['172.16.0.0/12', '192.168.0.0/16', '10.0.0.0/8'], 'name': 'GoWebFrame', 'environment': 'dev', 'port': 8080,
+        'system': {'allow_registration': False, 'trusted_proxies': ['172.16.0.0/12', '192.168.0.0/16', '10.0.0.0/8'], 'name': 'VideoCMS', 'environment': 'dev', 'port': 8080,
                    'router_prefix': '/api/v1', 'use_redis': True, 'use_mongo': False},
         'logger': {'level': 'info', 'output': 'stdout', 'format': 'json'},
         'i18n': {'path': 'locales'},

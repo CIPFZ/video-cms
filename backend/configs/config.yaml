@@ -1,7 +1,7 @@
 ﻿system:
   allow_registration: false
   trusted_proxies: [] # Set only your reverse proxy addresses; restart to apply configuration.
-  name: GoWebFrame
+  name: VideoCMS
   environment: dev
   port: 8080
   router_prefix: /api/v1

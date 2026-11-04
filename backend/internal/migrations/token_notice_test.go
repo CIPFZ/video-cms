@@ -2,8 +2,8 @@ package migrations
 
 import (
 	"context"
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"testing"

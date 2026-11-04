@@ -1,4 +1,4 @@
-# Base Frame 前端
+# 影视 CMS 前端
 
 Umi Max 4 + React 19 + Ant Design 5 / Pro Components。构建环境使用 Node 24.21.0 LTS，见 `.nvmrc`。
 

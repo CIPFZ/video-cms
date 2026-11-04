@@ -1,6 +1,6 @@
 package model
 
-import "github.com/CIPFZ/gowebframe/internal/modules/common"
+import "github.com/CIPFZ/video-cms/internal/modules/common"
 
 // SysApi 系统API表
 type SysApi struct {

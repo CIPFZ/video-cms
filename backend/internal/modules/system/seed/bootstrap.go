@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
-	"github.com/CIPFZ/gowebframe/pkg/utils"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/pkg/utils"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"

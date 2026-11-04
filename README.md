@@ -1,14 +1,14 @@
-# 影视采集与观看 · impl/video-cms
+# 影视 CMS
 
-这是从 `my-hk-server` 抽出的影视专用分支，保留 CMS 的账号、角色和权限管理。影视模块包括资源站、连通性检查、采集计划、采集日志、影视库和独立播放页。部署时无需配置磁力预览或代理管理服务。
+影视采集与观看系统，从 [go-web-frame](https://github.com/CIPFZ/go-web-frame) 的 `my-hk-server` 分支抽出，保留 CMS 的账号、角色和权限管理。影视模块包括资源站、连通性检查、采集计划、采集日志、影视库和独立播放页。部署时无需配置磁力预览或代理管理服务。
 
 ## 全新部署
 
 需要 Git、Python 3、Docker Engine 和 Docker Compose v2。在新目录执行：
 
 ```bash
-git clone --branch impl/video-cms --single-branch https://github.com/CIPFZ/go-web-frame.git go-web-frame-media
-cd go-web-frame-media
+git clone https://github.com/CIPFZ/video-cms.git
+cd video-cms
 python3 deploy/local/init.py
 docker compose --env-file deploy/local/.env -f deploy/local/compose.yaml up -d --build --wait --wait-timeout 180
 python3 deploy/local/smoke.py

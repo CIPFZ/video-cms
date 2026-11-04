@@ -9,8 +9,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	corelog "github.com/CIPFZ/gowebframe/internal/core/log"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	corelog "github.com/CIPFZ/video-cms/internal/core/log"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"

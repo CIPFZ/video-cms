@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	corei18n "github.com/CIPFZ/gowebframe/internal/core/i18n"
-	"github.com/CIPFZ/gowebframe/pkg/response"
+	corei18n "github.com/CIPFZ/video-cms/internal/core/i18n"
+	"github.com/CIPFZ/video-cms/pkg/response"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
 )

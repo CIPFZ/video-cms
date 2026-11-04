@@ -3,12 +3,12 @@ package observability
 import (
 	"context"
 	"fmt"
-	"github.com/CIPFZ/gowebframe/pkg/utils"
+	"github.com/CIPFZ/video-cms/pkg/utils"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"time"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"

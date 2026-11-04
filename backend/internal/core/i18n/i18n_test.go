@@ -1,7 +1,7 @@
 package i18n
 
 import (
-	"github.com/CIPFZ/gowebframe/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/core/config"
 	"os"
 	"path/filepath"
 	"testing"

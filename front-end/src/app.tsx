@@ -242,6 +242,8 @@ export const layout: RunTimeLayoutConfig = ({
       );
     },
     ...initialState?.settings,
+    // Settings saved per user may carry an older title, so the brand wins.
+    title: t('cms.brandName'),
   };
 };
 

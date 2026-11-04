@@ -7,10 +7,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	tokenCore "github.com/CIPFZ/gowebframe/internal/core/token"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/dto"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/repository"
+	tokenCore "github.com/CIPFZ/video-cms/internal/core/token"
+	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
+	"github.com/CIPFZ/video-cms/internal/modules/system/repository"
 	"gorm.io/gorm"
 )
 

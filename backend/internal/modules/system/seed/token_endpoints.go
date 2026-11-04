@@ -2,8 +2,8 @@ package seed
 
 import (
 	"errors"
-	tokenCore "github.com/CIPFZ/gowebframe/internal/core/token"
-	"github.com/CIPFZ/gowebframe/internal/modules/system/model"
+	tokenCore "github.com/CIPFZ/video-cms/internal/core/token"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"strings"

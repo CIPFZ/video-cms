@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	logger "github.com/CIPFZ/gowebframe/internal/core/log"
+	logger "github.com/CIPFZ/video-cms/internal/core/log"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"

@@ -1,4 +1,4 @@
-module github.com/CIPFZ/gowebframe
+module github.com/CIPFZ/video-cms
 
 go 1.27.1
 

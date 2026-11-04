@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CIPFZ/gowebframe/internal/core/config"
-	"github.com/CIPFZ/gowebframe/internal/svc"
+	"github.com/CIPFZ/video-cms/internal/core/config"
+	"github.com/CIPFZ/video-cms/internal/svc"
 	"github.com/gin-gonic/gin"
 )
 
