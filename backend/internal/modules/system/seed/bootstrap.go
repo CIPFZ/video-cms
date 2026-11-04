@@ -267,7 +267,7 @@ func ensureBaseApis(tx *gorm.DB) (map[string]uint, error) {
 		{Path: "/api/v1/sys/user/logout", Method: "POST", ApiGroup: "system-user", Description: "Logout"},
 		{Path: "/api/v1/sys/user/info", Method: "PUT", ApiGroup: "system-user", Description: "Update self info"},
 		{Path: "/api/v1/sys/user/ui-config", Method: "PUT", ApiGroup: "system-user", Description: "Update UI config"},
-		{Path: "/api/v1/sys/user/avatar", Method: "POST", ApiGroup: "system-user", Description: "Upload avatar"},
+		{Path: "/api/v1/sys/user/avatar", Method: "POST", ApiGroup: "system-user", Description: "Select avatar"},
 		{Path: "/api/v1/sys/user/switchAuthority", Method: "POST", ApiGroup: "system-user", Description: "Switch authority"},
 		{Path: "/api/v1/sys/user/addUser", Method: "POST", ApiGroup: "system-user", Description: "Add user"},
 		{Path: "/api/v1/sys/user/updateUser", Method: "PUT", ApiGroup: "system-user", Description: "Update user"},

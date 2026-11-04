@@ -10,8 +10,24 @@ const (
 	UserActive             = 1
 	UserInactive           = 0
 	DefaultUserAuthorityID = 888
-	DefaultUserAvatar      = "/default_avatar.jpg"
+	DefaultUserAvatar      = "/avatars/capybara.svg"
 )
+
+// AvatarPresets 可选头像，文件位于 front-end/public/avatars，与前端 AVATAR_PRESETS 保持一致。
+var AvatarPresets = []string{
+	"capybara", "bear", "cat", "fox", "rabbit", "panda",
+	"dog", "koala", "penguin", "tiger", "pig", "otter",
+}
+
+// IsAvatarPreset 判断头像地址是否为预置头像
+func IsAvatarPreset(avatar string) bool {
+	for _, name := range AvatarPresets {
+		if avatar == "/avatars/"+name+".svg" {
+			return true
+		}
+	}
+	return false
+}
 
 type SysUser struct {
 	common.BaseModel // 包含 ID, CreatedAt, UpdatedAt, DeletedAt

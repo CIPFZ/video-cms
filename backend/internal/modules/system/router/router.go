@@ -92,7 +92,7 @@ func (s *SystemRouter) initUserRoutes(group *gin.RouterGroup) {
 		userRouter.POST("logout", s.apis.UserApi.Logout)
 		userRouter.PUT("info", s.apis.UserApi.UpdateSelfInfo)
 		userRouter.PUT("ui-config", s.apis.UserApi.UpdateUiConfig)
-		userRouter.POST("avatar", s.apis.UserApi.UploadAvatar)
+		userRouter.POST("avatar", s.apis.UserApi.UpdateAvatar)
 
 		// --- "写" 操作 (统一应用操作日志中间件) ---
 		userWriteGroup := userRouter.Group("", middleware.OperationRecord(s.svcCtx))

@@ -1620,6 +1620,26 @@
     },
     "/sys/user/avatar": {
       "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "properties": {
+                "avatar": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "avatar"
+              ],
+              "type": "object"
+            }
+          }
+        ],
         "produces": [
           "application/json"
         ],

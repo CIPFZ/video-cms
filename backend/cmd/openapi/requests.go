@@ -9,7 +9,7 @@ import (
 
 var requests = map[string]any{
 	"/user/login": dto.LoginReq{}, "/user/register": dto.RegisterReq{},
-	"/sys/user/getUserList": dto.SearchUserReq{}, "/sys/user/addUser": dto.AddUserReq{}, "/sys/user/updateUser": dto.UpdateUserReq{}, "/sys/user/resetPassword": dto.ResetPasswordReq{}, "/sys/user/info": dto.UpdateSelfInfoReq{}, "/sys/user/ui-config": dto.UpdateUiConfigReq{},
+	"/sys/user/getUserList": dto.SearchUserReq{}, "/sys/user/addUser": dto.AddUserReq{}, "/sys/user/updateUser": dto.UpdateUserReq{}, "/sys/user/resetPassword": dto.ResetPasswordReq{}, "/sys/user/info": dto.UpdateSelfInfoReq{}, "/sys/user/ui-config": dto.UpdateUiConfigReq{}, "/sys/user/avatar": dto.UpdateAvatarReq{},
 	"/sys/menu/addBaseMenu": dto.AddMenuReq{}, "/sys/menu/updateBaseMenu": dto.UpdateMenuReq{}, "/sys/menu/getMenuAuthority": dto.GetAuthorityIdReq{},
 	"/sys/authority/getAuthorityList": common.PageInfo{}, "/sys/authority/createAuthority": dto.CreateAuthorityReq{}, "/sys/authority/updateAuthority": dto.UpdateAuthorityReq{}, "/sys/authority/setAuthorityMenus": dto.SetAuthorityMenusReq{},
 	"/sys/api/getApiList": dto.SearchApiReq{}, "/sys/api/createApi": dto.CreateApiReq{}, "/sys/api/updateApi": dto.UpdateApiReq{}, "/sys/api/deleteApi": dto.DeleteApiReq{},

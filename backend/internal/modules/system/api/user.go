@@ -1,15 +1,13 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
-	"path"
 	"time"
 
-	"github.com/CIPFZ/video-cms/internal/core/file"
 	logger "github.com/CIPFZ/video-cms/internal/core/log"
 	"github.com/CIPFZ/video-cms/internal/modules/common"
 	"github.com/CIPFZ/video-cms/internal/modules/system/dto"
+	"github.com/CIPFZ/video-cms/internal/modules/system/model"
 	"github.com/CIPFZ/video-cms/internal/modules/system/service"
 	"github.com/CIPFZ/video-cms/internal/svc"
 	"github.com/CIPFZ/video-cms/pkg/response"
@@ -270,38 +268,25 @@ func (u *UserApi) UpdateUiConfig(c *gin.Context) {
 	response.OkWithMessage("保存", c)
 }
 
-func (u *UserApi) UploadAvatar(c *gin.Context) {
+// UpdateAvatar 从预置头像中选择当前用户头像
+func (u *UserApi) UpdateAvatar(c *gin.Context) {
 	log := logger.GetLogger(c)
-
-	_, header, err := c.Request.FormFile("file")
-	if err != nil {
-		response.FailWithMessage("请选择要上传的图片", c)
+	var req dto.UpdateAvatarReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithValidation(err, c)
 		return
 	}
-	if err := file.ValidateUpload(u.svcCtx.Config.File, header); err != nil {
-		response.FailWithMessage(err.Error(), c)
+	if !model.IsAvatarPreset(req.Avatar) {
+		response.FailWithMessage("请选择系统提供的头像", c)
 		return
 	}
 
 	uid := utils.GetUserUUID(c)
-	ext := path.Ext(file.SanitizeUploadName(header.Filename))
-	if ext == "" {
-		ext = ".png"
-	}
-
-	fileName := fmt.Sprintf("user/avatar/%s%s", uid, ext)
-	avatarURL, _, err := u.svcCtx.OSS.Upload(c.Request.Context(), header, fileName)
-	if err != nil {
-		log.Error("avatar_upload_failed", zap.Error(err))
-		response.FailWithMessage("头像上传失败: "+err.Error(), c)
-		return
-	}
-
-	if err := u.userService.UpdateAvatar(c.Request.Context(), uid, avatarURL); err != nil {
+	if err := u.userService.UpdateAvatar(c.Request.Context(), uid, req.Avatar); err != nil {
 		log.Error("avatar_update_db_failed", zap.Error(err))
 		response.FailWithMessage("更新用户资料失败", c)
 		return
 	}
 
-	response.OkWithData(gin.H{"url": avatarURL}, c)
+	response.OkWithData(gin.H{"url": req.Avatar}, c)
 }

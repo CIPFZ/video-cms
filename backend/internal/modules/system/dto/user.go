@@ -59,6 +59,11 @@ type UpdateSelfInfoReq struct {
 	Bio      string `json:"bio"`                         // 个人简介
 }
 
+// UpdateAvatarReq 选择预置头像请求
+type UpdateAvatarReq struct {
+	Avatar string `json:"avatar" binding:"required"` // 预置头像地址，如 /avatars/cat.svg
+}
+
 // UpdateUiConfigReq 更新 UI 配置请求
 type UpdateUiConfigReq struct {
 	// 前端传来的是一个 JSON 对象，我们用 map[string]any 接收

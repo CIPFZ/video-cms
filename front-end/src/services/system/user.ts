@@ -89,6 +89,14 @@ export async function updateUiConfig(body: API.UpdateUiConfigParams) {
   });
 }
 
+/** 从预置头像中选择当前用户头像 */
+export async function updateAvatar(avatar: string) {
+  return request<API.CommonResponse>('/api/v1/sys/user/avatar', {
+    method: 'POST',
+    data: { avatar },
+  });
+}
+
 export function getPublicConfig() {
  return request<{code: number; data: {registrationEnabled: boolean}}>('/api/v1/public/config');
 }
