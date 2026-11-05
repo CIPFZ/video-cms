@@ -6,8 +6,8 @@
  * 布局组件
  */
 import Footer from './Footer';
-import { Question, SelectLang } from './RightContent';
+import { Question, SelectLang, SiteLink } from './RightContent';
 import { AvatarDropdown, AvatarName } from './RightContent/AvatarDropdown';
 import RouterLayout from './RouterLayout'
 
-export { AvatarDropdown, AvatarName, Footer, Question, SelectLang, RouterLayout };
+export { AvatarDropdown, AvatarName, Footer, Question, SelectLang, SiteLink, RouterLayout };

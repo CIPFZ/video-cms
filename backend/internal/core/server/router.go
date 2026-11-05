@@ -68,6 +68,15 @@ func InitRouters(svcCtx *svc.ServiceContext) *gin.Engine {
 		privateGroup.POST("/media/items/:id/refresh", mediaAPI.RefreshItem)
 		privateGroup.POST("/media/episodes/:id/check", mediaAPI.CheckEpisode)
 		privateGroup.GET("/media/episodes/:id/stream", mediaAPI.StreamEpisode)
+
+		// The public site reads without login; only the global per-IP limit applies,
+		// not the login quota on publicGroup.
+		publicMedia := r.Group(routerPrefix + "/public/media")
+		publicMedia.GET("/home", mediaAPI.PublicHome)
+		publicMedia.GET("/items", mediaAPI.PublicItems)
+		publicMedia.GET("/facets", mediaAPI.PublicFacets)
+		publicMedia.GET("/items/:id", mediaAPI.PublicItem)
+		publicMedia.GET("/episodes/:id/stream", mediaAPI.PublicStream)
 	}
 
 	svcCtx.Routers = r.Routes()

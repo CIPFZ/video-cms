@@ -169,3 +169,13 @@ func seedMediaSources(tx *gorm.DB) error {
 	}
 	return nil
 }
+
+const mediaItemsUpdatedIndex = "idx_media_items_updated_at"
+
+// applyMediaPublic indexes the public catalogue's default "recently updated" order.
+func applyMediaPublic(tx *gorm.DB, _ string) error {
+	if tx.Migrator().HasIndex(&media.Item{}, mediaItemsUpdatedIndex) {
+		return nil
+	}
+	return tx.Exec("CREATE INDEX " + mediaItemsUpdatedIndex + " ON media_items (updated_at)").Error
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Tag, message } from 'antd';
+import { t } from '@/i18n';
 import type { MediaItem, PlayEpisode } from '@/services/media';
 import './style.less';
 export const timeText = (v?: string) => v && !v.startsWith('0001') ? new Date(v).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }) : '—';
@@ -11,15 +12,17 @@ export function Cover({ url, title, small = false, className }: { url?: string; 
  const [failed, setFailed] = React.useState(false);
  React.useEffect(() => setFailed(false), [url]);
  // Resource sites commonly reject hotlinked images that carry a foreign Referer.
- return <div className={['media-cover', small && 'media-cover-small', className].filter(Boolean).join(' ')}>{url && !failed ? <img src={url} alt={title} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} /> : <div className="media-cover-placeholder"><span>映画</span><small>暂无封面</small></div>}</div>;
+ return <div className={['media-cover', small && 'media-cover-small', className].filter(Boolean).join(' ')}>{url && !failed ? <img src={url} alt={title} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} /> : <div className="media-cover-placeholder"><span>{t('cms.media.cover.mark')}</span><small>{t('cms.media.cover.none')}</small></div>}</div>;
 }
 
 // ---- Library / player helpers ----
+// Labels are read at render time so they follow the UI language; older rows stored the Chinese names as keys.
+const typeMeta = (kind: 'movie' | 'series' | 'anime' | 'variety', color: string) => ({ get label() { return t(`cms.media.type.${kind}`); }, color });
 export const mediaTypeMeta: Record<string, { label: string; color: string }> = {
- movie: { label: '电影', color: 'blue' }, series: { label: '电视剧', color: 'purple' },
- anime: { label: '动漫', color: 'cyan' }, variety: { label: '综艺', color: 'gold' },
- 电影: { label: '电影', color: 'blue' }, 电视剧: { label: '电视剧', color: 'purple' },
- 动漫: { label: '动漫', color: 'cyan' }, 综艺: { label: '综艺', color: 'gold' },
+ movie: typeMeta('movie', 'blue'), series: typeMeta('series', 'purple'),
+ anime: typeMeta('anime', 'cyan'), variety: typeMeta('variety', 'gold'),
+ 电影: typeMeta('movie', 'blue'), 电视剧: typeMeta('series', 'purple'),
+ 动漫: typeMeta('anime', 'cyan'), 综艺: typeMeta('variety', 'gold'),
 };
 export const mediaTypeOptions = ['movie', 'series', 'anime', 'variety'];
 export const splitList = (value?: string) => Array.from(new Set((value || '').split(/[,，/|、;；]+/).map(v => v.trim()).filter(Boolean)));
@@ -31,24 +34,26 @@ export const describe = (value?: string) => {
 };
 export const TypeTags = ({ value }: { value?: string }) => {
  const tags = splitList((value || '').replace(/\s+/g, ',')).map(raw => ({ raw, ...(mediaTypeMeta[raw.toLowerCase()] || { label: raw, color: 'default' }) }));
- return <>{(tags.length ? tags : [{ raw: '', label: '未分类', color: 'default' }]).map(tag => <Tag key={tag.raw || tag.label} bordered={false} color={tag.color} className="media-type-tag">{tag.label}</Tag>)}</>;
+ return <>{(tags.length ? tags : [{ raw: '', label: t('cms.media.type.none'), color: 'default' }]).map(tag => <Tag key={tag.raw || tag.label} bordered={false} color={tag.color} className="media-type-tag">{tag.label}</Tag>)}</>;
 };
 export const GenreTags = ({ value }: { value?: string }) => <>{splitList(value).map(tag => <Tag key={tag} bordered={false} className="media-genre-tag">{tag}</Tag>)}</>;
 export const Facts = ({ item }: { item: MediaItem }) => factsOf(item).length ? <span className="media-facts">{factsOf(item).map(fact => <span key={fact}>{fact}</span>)}</span> : null;
 export function People({ item, limit = 8 }: { item: MediaItem; limit?: number }) {
  const director = splitList(item.director), actors = splitList(item.actors);
  if (!director.length && !actors.length) return null;
- return <dl className="media-people">{director.length > 0 && <><dt>导演</dt><dd>{director.join(' / ')}</dd></>}{actors.length > 0 && <><dt>主演</dt><dd>{actors.slice(0, limit).join(' / ')}{actors.length > limit ? ' 等' : ''}</dd></>}</dl>;
+ return <dl className="media-people">{director.length > 0 && <><dt>{t('cms.media.people.director')}</dt><dd>{director.join(' / ')}</dd></>}{actors.length > 0 && <><dt>{t('cms.media.people.cast')}</dt><dd>{actors.slice(0, limit).join(' / ')}{actors.length > limit ? t('cms.media.people.more') : ''}</dd></>}</dl>;
 }
 
 export const episodeTitle = (episode: Pick<PlayEpisode, 'episodeNo' | 'episodeName'>) =>
- episode.episodeName && !/^(m3u8|mp4|hls|播放)$/i.test(episode.episodeName.trim()) ? episode.episodeName : '第 ' + episode.episodeNo + ' 集';
+ episode.episodeName && !/^(m3u8|mp4|hls|播放)$/i.test(episode.episodeName.trim()) ? episode.episodeName : t('cms.media.episodeNo', { n: episode.episodeNo });
+// The back office plays through the public player.
 export const playerURL = (itemId: number, lineId?: number, episodeId?: number, restart = false) => {
- const params = new URLSearchParams({ id: String(itemId) });
- if (lineId) params.set('lineId', String(lineId));
- if (episodeId) params.set('episodeId', String(episodeId));
+ const params = new URLSearchParams();
+ if (lineId) params.set('line', String(lineId));
+ if (episodeId) params.set('ep', String(episodeId));
  if (restart) params.set('restart', '1');
- return '/#/media/player?' + params.toString();
+ const query = params.toString();
+ return '/#/watch/' + itemId + (query ? '?' + query : '');
 };
 export const openPlayer = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
 

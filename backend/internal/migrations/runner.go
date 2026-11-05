@@ -15,8 +15,9 @@ import (
 	"time"
 )
 
-const Latest = "20261104_media_run_items_v1"
+const Latest = "20261105_media_public_v1"
 const mediaEditionVersion = "20261103_media_edition_v1"
+const mediaRunItemsVersion = "20261104_media_run_items_v1"
 const tokenNoticeVersion = "20260910_token_notice_v1"
 const i18nVersion = "20260910_cms_i18n_v1"
 const baselineVersion = "20260910_sessions_policy_bootstrap_v1"
@@ -207,7 +208,8 @@ func apply(db *gorm.DB, cfg *config.Config, logger *zap.Logger) error {
 		run  func(*gorm.DB, string) error
 	}{
 		{mediaEditionVersion, ensureMediaModule},
-		{Latest, applyMediaRunItems},
+		{mediaRunItemsVersion, applyMediaRunItems},
+		{Latest, applyMediaPublic},
 	} {
 		var count int64
 		if err := db.Model(&schemaMigration{}).Where("name = ?", step.name).Count(&count).Error; err != nil {

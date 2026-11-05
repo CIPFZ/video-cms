@@ -110,12 +110,14 @@ func TestMediaRunItemsUpgradeKeepsGrantsAndEditedSchedules(t *testing.T) {
 	var listSources model.SysApi
 	require.NoError(t, db.Where("path = ? AND method = ?", "/custom/media/sources", "GET").First(&listSources).Error)
 	require.NoError(t, db.Where("api_id = ? AND authority_id = ?", listSources.ID, 1).Delete(&model.SysAuthorityApi{}).Error)
-	require.NoError(t, db.Where("name = ?", Latest).Delete(&schemaMigration{}).Error)
+	require.NoError(t, db.Where("name IN ?", []string{mediaRunItemsVersion, Latest}).Delete(&schemaMigration{}).Error)
 	require.NoError(t, db.Migrator().DropTable(&media.CollectionRunItem{}))
+	require.NoError(t, db.Migrator().DropIndex(&media.Item{}, mediaItemsUpdatedIndex))
 
 	require.NoError(t, Run(context.Background(), db, cfg, zap.NewNop()))
 	require.NoError(t, Check(db))
 	require.True(t, db.Migrator().HasTable(&media.CollectionRunItem{}))
+	require.True(t, db.Migrator().HasIndex(&media.Item{}, mediaItemsUpdatedIndex))
 	var items model.SysApi
 	require.NoError(t, db.Where("path = ? AND method = ?", "/custom/media/runs/:id/items", "GET").First(&items).Error)
 	require.NoError(t, db.Where("api_id = ? AND authority_id = ?", items.ID, 1).First(&model.SysAuthorityApi{}).Error)

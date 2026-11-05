@@ -13,14 +13,14 @@ const hasRoutePath = (list: any[] = [], path: string): boolean => {
 };
 
 describe('routes config', () => {
-  it('redirects the root route to dashboard workplace', () => {
-    const layoutRoute = routes.find((route) => route.path === '/');
-
-    expect(layoutRoute).toBeDefined();
-    expect(layoutRoute?.routes?.[0]).toMatchObject({
-      path: '/',
-      redirect: '/dashboard/workplace',
-    });
+  it('serves the public site at the root, outside the back-office layout', () => {
+    const top = (path: string) => (routes as any[]).find((route) => route.path === path && !route.id);
+    for (const path of ['/', '/browse', '/title/:id', '/watch/:id', '/admin', '/media/player']) {
+      expect(top(path)).toMatchObject({ layout: false });
+    }
+    // Back-office routes come from the menus; nothing in the layout claims "/".
+    const layoutRoute = (routes as any[]).find((route) => route.id === 'ant-design-pro-layout');
+    expect(layoutRoute?.routes).toEqual([]);
   });
 
   it('leaves business routes to backend menus', () => {

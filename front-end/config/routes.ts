@@ -28,20 +28,19 @@ export default [
       },
     ],
   },
-  {
-    path: '/media/player',
-    layout: false,
-    component: './media/player',
-  },
+  // Public site: no login, its own layout.
+  { path: '/', layout: false, component: './site/home' },
+  { path: '/browse', layout: false, component: './site/browse' },
+  { path: '/title/:id', layout: false, component: './site/title' },
+  { path: '/watch/:id', layout: false, component: './site/watch' },
+  // Entry to the back office: the role's start page, or login.
+  { path: '/admin', layout: false, component: './site/admin' },
+  // Old back-office player links.
+  { path: '/media/player', layout: false, component: './site/legacy-player' },
   {
     path: '/',
     id: 'ant-design-pro-layout',
-    routes: [
-      {
-        path: '/',
-        redirect: '/dashboard/workplace',
-      },
-    ],
+    routes: [],
   },
   {
     path: '/*',

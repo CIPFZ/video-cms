@@ -1,9 +1,12 @@
 package media
 
 import (
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/CIPFZ/video-cms/pkg/response"
 	"github.com/gin-gonic/gin"
-	"strconv"
 )
 
 type API struct{ service *Service }
@@ -231,4 +234,65 @@ func (a *API) CheckEpisode(c *gin.Context) {
 		return
 	}
 	response.OkWithData(v, c)
+}
+
+// Public site: read-only, no login.
+
+func (a *API) PublicHome(c *gin.Context) {
+	v, e := a.service.PublicHome(c.Request.Context())
+	if e != nil {
+		response.FailWithMessage("获取影视条目失败", c)
+		return
+	}
+	response.OkWithData(v, c)
+}
+func (a *API) PublicItems(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	size, _ := strconv.Atoi(c.DefaultQuery("pageSize", "24"))
+	var years []string
+	if raw := c.Query("year"); raw != "" {
+		years = strings.Split(raw, ",")
+	}
+	v, e := a.service.ListPublic(c.Request.Context(), PublicFilter{Type: c.Query("type"), Years: years, Area: c.Query("area"),
+		Genre: c.Query("genre"), Query: c.Query("q"), Sort: c.Query("sort"), Page: page, PageSize: size})
+	if e != nil {
+		response.FailWithMessage("获取影视条目失败", c)
+		return
+	}
+	response.OkWithData(v, c)
+}
+func (a *API) PublicFacets(c *gin.Context) {
+	v, e := a.service.PublicFacets(c.Request.Context())
+	if e != nil {
+		response.FailWithMessage("获取影视条目失败", c)
+		return
+	}
+	response.OkWithData(v, c)
+}
+func (a *API) PublicItem(c *gin.Context) {
+	id, ok := parseUintID(c.Param("id"))
+	if !ok {
+		response.FailWithMessage("影视 ID 无效", c)
+		return
+	}
+	v, e := a.service.PublicDetail(c.Request.Context(), id)
+	if e != nil {
+		response.FailWithMessage("影视条目不存在", c)
+		return
+	}
+	response.OkWithData(v, c)
+}
+
+// PublicStream is the playback fallback when a CDN rejects the browser.
+func (a *API) PublicStream(c *gin.Context) {
+	id, ok := parseUintID(c.Param("id"))
+	if !ok {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	if a.service.publicEpisode(c.Request.Context(), id) != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	a.StreamEpisode(c)
 }

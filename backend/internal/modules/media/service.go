@@ -16,6 +16,10 @@ type Service struct {
 	cancel context.CancelFunc
 	done   chan struct{}
 	once   sync.Once
+
+	facetMu  sync.Mutex
+	facets   *PublicFacets
+	facetsAt time.Time
 }
 type Config struct{ DB *gorm.DB }
 
@@ -169,6 +173,7 @@ func (s *Service) ListItems(ctx context.Context, page, size int, query, kind str
 	err := db.Order("updated_at desc,id desc").Offset((page - 1) * size).Limit(size).Find(&rows).Error
 	return map[string]any{"list": rows, "total": total, "page": page, "pageSize": size}, err
 }
+
 type RunFilter struct {
 	SourceID uint
 	Mode     string // a concrete collection mode; empty or "collect" for all
@@ -218,6 +223,7 @@ func (s *Service) ListRuns(ctx context.Context, f RunFilter) (map[string]any, er
 	}).Order("id desc").Offset((f.Page - 1) * f.PageSize).Limit(f.PageSize).Find(&rows).Error
 	return map[string]any{"list": rows, "total": total, "page": f.Page, "pageSize": f.PageSize, "summary": summary}, err
 }
+
 // ListRunItems pages the titles a run inserted, updated or failed to save.
 func (s *Service) ListRunItems(ctx context.Context, runID uint, action string, page, size int) (map[string]any, error) {
 	if page < 1 {

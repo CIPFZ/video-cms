@@ -3,6 +3,7 @@ import type { RequestOptions } from '@@/plugin-request/request';
 import { clearMenuCache } from './routing/menuDataStore';
 import type { RequestConfig } from '@umijs/max';
 
+import { currentHashPath, isPublicPath } from './routing/publicPaths';
 import { isBackendRequest, renewedToken } from './utils/authHeaders';
 
 const TOKEN_KEY = 'token';
@@ -50,7 +51,8 @@ export const errorConfig: RequestConfig = {
       ) {
         localStorage.removeItem(TOKEN_KEY);
         clearMenuCache();
-        if (!window.location.hash.startsWith('#/user/')) {
+        // A stale token on the public site is dropped quietly; visitors stay where they are.
+        if (!window.location.hash.startsWith('#/user/') && !isPublicPath(currentHashPath())) {
           window.location.hash = '/user/login';
           window.location.reload();
         }

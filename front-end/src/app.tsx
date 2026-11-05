@@ -14,6 +14,7 @@ import {
   Footer,
   Question,
   SelectLang,
+  SiteLink,
 } from '@/components';
 import { getCurrentUserInfo } from '@/services/system/user';
 import defaultSettings from '../config/defaultSettings';
@@ -23,6 +24,7 @@ import { processMenuData, buildRoutes } from '@/routing/menuHelpers';
 import { fetchMenuData } from '@/routing/menuDataStore';
 import { withMenuIcon } from '@/routing/menuIcon';
 import { updateUiConfig } from '@/services/system/user';
+import { isPublicPath } from '@/routing/publicPaths';
 
 const isDev = process.env.NODE_ENV === 'development' || process.env.CI;
 const loginPath = '/user/login';
@@ -57,9 +59,9 @@ export async function getInitialState(): Promise<{
 
       // 🚨 场景 2：明确的未登录 (1003)
       if (msg.code === Code.UNAUTHORIZED) {
-        // 只有这里才执行登出逻辑
+        // 只有这里才执行登出逻辑；前台访客不跳登录页
         localStorage.removeItem('token');
-        history.push(loginPath);
+        if (!isPublicPath(history.location.pathname)) history.push(loginPath);
         return undefined;
       }
 
@@ -138,6 +140,7 @@ export const layout: RunTimeLayoutConfig = ({
 
   return {
     actionsRender: () => [
+      <SiteLink key="site" />,
       <Question key="doc" />,
       <SelectLang key="SelectLang" />,
     ],
@@ -257,48 +260,17 @@ export async function patchClientRoutes({ routes }: { routes: any[] }) {
     if (!rawMenuData || rawMenuData.length === 0) return;
 
     const dynamicRoutes = buildRoutes(rawMenuData);
+    // Matched by id: the public home also uses path "/".
     const layoutRoute = routes.find(
-      (route) => route.id === 'ant-design-pro-layout' || route.path === '/',
+      (route) => route.id === 'ant-design-pro-layout',
     );
 
     if (layoutRoute) {
       if (!layoutRoute.routes) {
         layoutRoute.routes = [];
       }
+      // "/" belongs to the public site; /admin sends staff to their default page.
       layoutRoute.routes.unshift(...dynamicRoutes);
-
-      try {
-        const userRes = await getCurrentUserInfo({ skipErrorHandler: true });
-
-        // ✨ 这里也做同样的精确判断
-        if (
-          userRes &&
-          userRes.code === Code.SUCCESS &&
-          userRes.data?.authority
-        ) {
-          const defaultRouter = userRes.data.authority.defaultRouter;
-          if (defaultRouter) {
-            const redirectPath = defaultRouter.startsWith('/')
-              ? defaultRouter
-              : `/${defaultRouter}`;
-            const redirectRoute = layoutRoute.routes.find(
-              (r: any) => r.path === '/' && r.redirect,
-            );
-
-            if (redirectRoute) {
-              redirectRoute.redirect = redirectPath;
-            } else {
-              layoutRoute.routes.unshift({
-                path: '/',
-                redirect: redirectPath,
-                exact: true,
-              });
-            }
-          }
-        }
-      } catch (e) {
-        // 容错
-      }
     }
   } catch (e) {
     console.error('patchClientRoutes error:', e);

@@ -132,12 +132,16 @@ const Login: React.FC = () => {
         // 路由跳转
         const urlParams = new URL(window.location.href).searchParams;
         const redirect = urlParams.get('redirect');
-        window.location.href =
+        // "/" is the public site; staff land on their back-office page. A hash-only
+        // change would keep the routes loaded before login, so reload explicitly.
+        const target =
           redirect?.startsWith('/') &&
           !redirect.startsWith('//') &&
           !redirect.includes('\\')
             ? redirect
-            : '/';
+            : '/#/admin';
+        window.location.assign(target);
+        if (target.startsWith('/#')) window.location.reload();
         return;
       }
       console.log(response);

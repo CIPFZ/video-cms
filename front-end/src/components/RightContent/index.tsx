@@ -1,4 +1,4 @@
-import { GlobalOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { DesktopOutlined, GlobalOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { setLocale } from '@umijs/max';
 import { Button, Dropdown } from 'antd';
 import { t, useI18n } from '@/i18n';
@@ -47,6 +47,26 @@ export const Question: React.FC = () => {
       }}
     >
       <QuestionCircleOutlined />
+    </a>
+  );
+};
+
+// Back office to the public site: same tab, the site needs no login.
+export const SiteLink: React.FC = () => {
+  useI18n();
+  return (
+    <a
+      href="/#/"
+      aria-label={t('cms.site.visit')}
+      title={t('cms.site.visit')}
+      style={{
+        display: 'inline-flex',
+        padding: 4,
+        fontSize: 18,
+        color: 'inherit',
+      }}
+    >
+      <DesktopOutlined />
     </a>
   );
 };
