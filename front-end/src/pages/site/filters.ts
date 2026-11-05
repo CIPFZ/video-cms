@@ -18,7 +18,7 @@ export function parseFilters(params: URLSearchParams): SiteFilters {
   };
 }
 
-/** Query string for the filters, defaults omitted; `title` (an open detail) is not a filter. */
+/** Query string for the filters, defaults omitted. */
 export function filtersToParams(filters: Partial<SiteFilters>): URLSearchParams {
   const f = { ...EMPTY, ...filters };
   const out = new URLSearchParams();

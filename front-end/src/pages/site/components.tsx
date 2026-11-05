@@ -1,21 +1,11 @@
 import React from 'react';
 import { Button, Empty, Result, Skeleton } from 'antd';
 import { ReloadOutlined, RightOutlined } from '@ant-design/icons';
-import { Link, useSearchParams } from '@umijs/max';
+import { Link } from '@umijs/max';
 import { t } from '@/i18n';
 import type { SiteCard } from '@/services/site';
 import { Cover, splitList } from '../media/shared';
 import { typeLabel } from './SiteLayout';
-
-/** Details open over the current list (`?title=`), so closing returns to the same
- *  scroll position and filters; Back closes them too. */
-export function useTitleOverlay() {
-  const [params, setParams] = useSearchParams();
-  const openId = Number(params.get('title')) || undefined;
-  const open = (id: number) => { const next = new URLSearchParams(params); next.set('title', String(id)); setParams(next); };
-  const close = () => { const next = new URLSearchParams(params); next.delete('title'); setParams(next, { replace: true }); };
-  return { openId, open, close };
-}
 
 export const titleURL = (id: number) => `/title/${id}`;
 
@@ -25,25 +15,20 @@ const badge = (card: SiteCard) => {
   return t('cms.site.card.episodes', { n: card.episodes });
 };
 
-export function PosterCard({ card, onOpen, note }: { card: SiteCard; onOpen: (id: number) => void; note?: string }) {
+export function PosterCard({ card, note }: { card: SiteCard; note?: string }) {
   const meta = [card.year, card.area, splitList(card.mediaType).map(typeLabel)[0]].filter(Boolean).join(' · ');
   const label = badge(card);
   return (
-    <Link to={titleURL(card.id)} className="site-card" onClick={event => {
-      // Modified clicks keep the browser's new-tab behaviour.
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      event.preventDefault();
-      onOpen(card.id);
-    }}>
+    <Link to={titleURL(card.id)} className="site-card">
       <div className="site-card-poster"><Cover url={card.coverUrl} title={card.title} />{label && <span className="site-card-badge">{label}</span>}</div>
       <div className="site-card-title" title={card.title}>{card.title}</div>
-      <div className="site-card-meta">{note || meta || ' '}</div>
+      <div className="site-card-meta">{note || meta || ' '}</div>
     </Link>
   );
 }
 
-export function PosterGrid({ cards, onOpen }: { cards: SiteCard[]; onOpen: (id: number) => void }) {
-  return <div className="site-grid">{cards.map(card => <PosterCard key={card.id} card={card} onOpen={onOpen} />)}</div>;
+export function PosterGrid({ cards }: { cards: SiteCard[] }) {
+  return <div className="site-grid">{cards.map(card => <PosterCard key={card.id} card={card} />)}</div>;
 }
 
 const SKELETON_KEYS = Array.from({ length: 48 }, (_, i) => `skeleton-${i}`);

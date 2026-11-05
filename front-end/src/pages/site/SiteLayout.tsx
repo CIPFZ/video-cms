@@ -10,7 +10,7 @@ import './site.less';
 export const siteTheme = { algorithm: theme.darkAlgorithm, token: { colorPrimary: '#3b82f6', borderRadius: 8 } };
 export const typeLabel = (kind: string) => t(`cms.media.type.${kind as (typeof MEDIA_TYPES)[number]}`);
 
-export default function SiteLayout({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
+export default function SiteLayout({ children, flush = false }: { children: React.ReactNode; flush?: boolean }) {
   useI18n();
   const location = useLocation();
   const [params] = useSearchParams();
@@ -22,7 +22,7 @@ export default function SiteLayout({ children, wide = false }: { children: React
     <ConfigProvider theme={siteTheme}>
       <div className="site-page">
         <header className="site-header">
-          <div className={`site-header-inner${wide ? ' is-wide' : ''}`}>
+          <div className="site-header-inner">
             <Link to="/" className="site-brand"><img src="/logo.svg" alt="" />{t('cms.brandName')}</Link>
             <nav className="site-nav" aria-label={t('cms.site.nav.label')}>
               {nav.map(item => <Link key={item.key} to={item.to} className={current === item.key ? 'is-active' : undefined} aria-current={current === item.key ? 'page' : undefined}>{item.label}</Link>)}
@@ -35,7 +35,7 @@ export default function SiteLayout({ children, wide = false }: { children: React
             </div>
           </div>
         </header>
-        <main className={`site-main${wide ? ' is-wide' : ''}`}>{children}</main>
+        <main className={flush ? 'site-main-flush' : 'site-main'}>{children}</main>
         <footer className="site-footer">{t('cms.site.footer')}</footer>
       </div>
     </ConfigProvider>

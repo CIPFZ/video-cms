@@ -2,10 +2,9 @@ import { browseURL, filtersToParams, parseFilters, toggleYear, withFilter } from
 
 describe('site filters', () => {
   it('round-trips every filter through the URL', () => {
-    const filters = parseFilters(new URLSearchParams('type=series&year=2024,none&area=中国&genre=悬疑&q=长季&sort=year&page=3&title=7'));
+    const filters = parseFilters(new URLSearchParams('type=series&year=2024,none&area=中国&genre=悬疑&q=长季&sort=year&page=3'));
     expect(filters).toEqual({ type: 'series', years: ['2024', 'none'], area: '中国', genre: '悬疑', q: '长季', sort: 'year', page: 3 });
     expect(parseFilters(filtersToParams(filters))).toEqual(filters);
-    expect(filtersToParams(filters).has('title')).toBe(false);
   });
 
   it('drops unknown or malformed values', () => {

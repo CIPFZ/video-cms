@@ -5,9 +5,9 @@ import { history, useSearchParams } from '@umijs/max';
 import { t, useI18n } from '@/i18n';
 import { getSiteFacets, listSiteItems, type SiteCard, type SiteFacet, type SiteFacets } from '@/services/site';
 import SiteLayout, { typeLabel } from '../SiteLayout';
-import TitleOverlay from '../TitleOverlay';
-import { GridSkeleton, LoadFailed, Nothing, PosterGrid, useTitleOverlay } from '../components';
+import { GridSkeleton, LoadFailed, Nothing, PosterGrid } from '../components';
 import { MEDIA_TYPES, browseURL, filtersToParams, hasFilters, parseFilters, toggleYear, withFilter, type SiteFilters } from '../filters';
+import { useScrollMemory } from '../useScrollMemory';
 
 const PAGE_SIZE = 24;
 
@@ -22,8 +22,6 @@ function Chip({ active, onClick, children, count }: { active: boolean; onClick: 
 export default function SiteBrowse() {
   useI18n();
   const [params] = useSearchParams();
-  const { open } = useTitleOverlay();
-  // The open title is not part of the list query: opening details keeps the list as it is.
   const filterKey = filtersToParams(parseFilters(params)).toString();
   const filters = useMemo(() => parseFilters(new URLSearchParams(filterKey)), [filterKey]);
   const [cards, setCards] = useState<SiteCard[]>([]);
@@ -31,6 +29,7 @@ export default function SiteBrowse() {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [attempt, setAttempt] = useState(0);
   const [facets, setFacets] = useState<SiteFacets>();
+  useScrollMemory(state !== 'loading');
 
   useEffect(() => { getSiteFacets().then(r => { if (r.code === 0) setFacets(r.data); }).catch(() => undefined); }, []);
   useEffect(() => {
@@ -91,12 +90,11 @@ export default function SiteBrowse() {
       {state === 'error' && <LoadFailed onRetry={() => setAttempt(n => n + 1)} />}
       {state === 'loading' && <GridSkeleton count={PAGE_SIZE} />}
       {state === 'ready' && (cards.length
-        ? <PosterGrid cards={cards} onOpen={open} />
+        ? <PosterGrid cards={cards} />
         : <Nothing text={hasFilters(filters) ? t('cms.site.empty.filtered') : t('cms.site.empty.catalogue')} action={hasFilters(filters) && <Button onClick={() => go(withFilter(parseFilters(new URLSearchParams()), {}))}>{t('cms.site.browse.clear')}</Button>} />)}
       {state === 'ready' && total > PAGE_SIZE && (
-        <div className="site-pagination"><Pagination current={filters.page} total={total} pageSize={PAGE_SIZE} showSizeChanger={false} onChange={page => { set({ page }); window.scrollTo({ top: 0 }); }} /></div>
+        <div className="site-pagination"><Pagination current={filters.page} total={total} pageSize={PAGE_SIZE} showSizeChanger={false} onChange={page => set({ page })} /></div>
       )}
-      <TitleOverlay />
     </SiteLayout>
   );
 }

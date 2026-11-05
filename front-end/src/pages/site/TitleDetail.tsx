@@ -7,6 +7,7 @@ import type { MediaItem } from '@/services/media';
 import { getSiteItem, type SiteDetail, type SiteLine } from '@/services/site';
 import { Cover, EpisodeRanges, Facts, GenreTags, People, TypeTags, describe, episodeTitle, readProgress } from '../media/shared';
 import { LoadFailed, Nothing } from './components';
+import { useScrollMemory } from './useScrollMemory';
 
 const RANGE = 60;
 
@@ -25,13 +26,14 @@ function Episodes({ id, line, watchedId }: { id: number; line: SiteLine; watched
   const [reverse, setReverse] = useState(false);
   const [range, setRange] = useState(0);
   const ordered = reverse ? [...line.episodes].reverse() : line.episodes;
-  if (line.episodes.length <= 1) return null;
   return (
     <div className="site-episodes">
-      <div className="site-episodes-head">
-        <Typography.Text type="secondary">{t('cms.site.detail.episodeCount', { n: line.episodes.length })}</Typography.Text>
-        <Button size="small" type="text" onClick={() => { setReverse(!reverse); setRange(0); }}>{reverse ? t('cms.site.detail.descending') : t('cms.site.detail.ascending')}</Button>
-      </div>
+      {line.episodes.length > 1 && (
+        <div className="site-episodes-head">
+          <Typography.Text type="secondary">{t('cms.site.detail.episodeCount', { n: line.episodes.length })}</Typography.Text>
+          <Button size="small" type="text" onClick={() => { setReverse(!reverse); setRange(0); }}>{reverse ? t('cms.site.detail.descending') : t('cms.site.detail.ascending')}</Button>
+        </div>
+      )}
       <EpisodeRanges total={ordered.length} size={RANGE} reverse={reverse} value={range} onChange={setRange} />
       <div className="site-episode-grid">
         {ordered.slice(range * RANGE, (range + 1) * RANGE).map(episode => (
@@ -65,7 +67,9 @@ export default function TitleDetail({ id }: { id: number }) {
   useEffect(() => {
     if (!detail) return;
     setLineId(detail.lines.find(line => line.id === progress?.lineId)?.id || detail.lines[0]?.id);
+    document.title = [detail.title, t('cms.brandName')].join(' · ');
   }, [detail]);
+  useScrollMemory(state !== 'loading');
 
   if (state === 'error') return <LoadFailed onRetry={() => setAttempt(n => n + 1)} />;
   if (state === 'loading' || !detail) return <div className="site-detail"><Skeleton.Node active className="site-detail-cover-skeleton"><span /></Skeleton.Node><Skeleton active paragraph={{ rows: 6 }} /></div>;
@@ -73,33 +77,41 @@ export default function TitleDetail({ id }: { id: number }) {
   const first = detail.lines[0];
   const description = describe(detail.description);
   const item: MediaItem = { ...detail, status: 'active' };
+  // A single line with a single episode has nothing to choose: the play button covers it.
+  const choices = detail.lines.length > 1 || (first?.episodes.length || 0) > 1;
   return (
-    <div className="site-detail">
-      <Cover url={detail.coverUrl} title={detail.title} className="site-detail-cover" />
-      <div className="site-detail-body">
-        <h1>{detail.title}</h1>
-        {detail.originalTitle && detail.originalTitle !== detail.title && <div className="site-detail-original">{detail.originalTitle}</div>}
-        <div className="site-detail-facts"><TypeTags value={detail.mediaType} /><Facts item={item} /></div>
-        <GenreTags value={detail.genres} />
-        <People item={item} />
-        <Typography.Paragraph className="site-detail-description" ellipsis={description ? { rows: 4, expandable: 'collapsible', symbol: expanded => (expanded ? t('cms.site.detail.collapse') : t('cms.site.detail.expand')) } : false}>
-          {description || t('cms.site.detail.noDescription')}
-        </Typography.Paragraph>
-        {first ? (
-          <Space wrap className="site-detail-actions">
-            {progress
-              ? <Link to={watchURL(detail.id, progress.lineId, progress.episodeId)}><Button type="primary" size="large" icon={<HistoryOutlined />}>{t('cms.site.detail.continue', { episode: progress.episodeTitle })}</Button></Link>
-              : <Link to={watchURL(detail.id, first.id, first.episodes[0]?.id)}><Button type="primary" size="large" icon={<CaretRightFilled />}>{t('cms.site.detail.play')}</Button></Link>}
-            {progress && <Link to={watchURL(detail.id, first.id, first.episodes[0]?.id, true)}><Button size="large">{t('cms.site.detail.fromStart')}</Button></Link>}
-          </Space>
-        ) : <Nothing text={t('cms.site.detail.noLines')} />}
-        {detail.lines.length > 0 && (
-          <Tabs className="site-detail-lines" activeKey={String(lineId)} onChange={key => setLineId(Number(key))} items={detail.lines.map((line, index) => ({
+    <div className="site-title">
+      {detail.coverUrl && <div className="site-title-backdrop" aria-hidden><img src={detail.coverUrl} alt="" referrerPolicy="no-referrer" onError={event => { event.currentTarget.style.display = 'none'; }} /></div>}
+      <div className="site-detail">
+        <Cover url={detail.coverUrl} title={detail.title} className="site-detail-cover" />
+        <div className="site-detail-body">
+          <h1>{detail.title}</h1>
+          {detail.originalTitle && detail.originalTitle !== detail.title && <div className="site-detail-original">{detail.originalTitle}</div>}
+          <div className="site-detail-facts"><TypeTags value={detail.mediaType} /><Facts item={item} /></div>
+          <GenreTags value={detail.genres} />
+          <People item={item} />
+          <Typography.Paragraph className="site-detail-description" ellipsis={description ? { rows: 4, expandable: 'collapsible', symbol: expanded => (expanded ? t('cms.site.detail.collapse') : t('cms.site.detail.expand')) } : false}>
+            {description || t('cms.site.detail.noDescription')}
+          </Typography.Paragraph>
+          {first ? (
+            <Space wrap className="site-detail-actions">
+              {progress
+                ? <Link to={watchURL(detail.id, progress.lineId, progress.episodeId)}><Button type="primary" size="large" icon={<HistoryOutlined />}>{t('cms.site.detail.continue', { episode: progress.episodeTitle })}</Button></Link>
+                : <Link to={watchURL(detail.id, first.id, first.episodes[0]?.id)}><Button type="primary" size="large" icon={<CaretRightFilled />}>{t('cms.site.detail.play')}</Button></Link>}
+              {progress && <Link to={watchURL(detail.id, first.id, first.episodes[0]?.id, true)}><Button size="large">{t('cms.site.detail.fromStart')}</Button></Link>}
+            </Space>
+          ) : <Nothing text={t('cms.site.detail.noLines')} />}
+        </div>
+      </div>
+      {choices && (
+        <section className="site-detail-lines">
+          <h2>{t('cms.site.watch.episodes')}</h2>
+          <Tabs activeKey={String(lineId)} onChange={key => setLineId(Number(key))} items={detail.lines.map((line, index) => ({
             key: String(line.id), label: lineLabel(line, index),
             children: <Episodes id={detail.id} line={line} watchedId={progress?.lineId === line.id ? progress.episodeId : undefined} />,
           }))} />
-        )}
-      </div>
+        </section>
+      )}
     </div>
   );
 }

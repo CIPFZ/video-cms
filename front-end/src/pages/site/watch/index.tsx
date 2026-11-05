@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Button, ConfigProvider, Empty, Select, Space, Spin, Switch, Tooltip, Typography, message } from 'antd';
-import { CopyOutlined, ExportOutlined, LeftOutlined, ReloadOutlined, SortAscendingOutlined, SortDescendingOutlined, StepBackwardOutlined, StepForwardOutlined, SwapOutlined } from '@ant-design/icons';
+import { Button, Empty, Select, Space, Spin, Switch, Tooltip, Typography, message } from 'antd';
+import { CopyOutlined, ExportOutlined, ReloadOutlined, SortAscendingOutlined, SortDescendingOutlined, StepBackwardOutlined, StepForwardOutlined, SwapOutlined } from '@ant-design/icons';
 import { Link, history, useParams, useSearchParams } from '@umijs/max';
 import { t, useI18n } from '@/i18n';
 import type { MediaItem } from '@/services/media';
 import { getSiteItem, siteStreamURL, type SiteDetail, type SiteEpisode, type SiteLine } from '@/services/site';
 import { Cover, EpisodeRanges, Facts, GenreTags, People, TypeTags, clockText, copyText, describe, episodeTitle, readProgress, writeProgress } from '../../media/shared';
 import PlayerHost, { type PlayerFailure } from '../PlayerHost';
-import { siteTheme } from '../SiteLayout';
+import SiteLayout from '../SiteLayout';
 import { lineLabel, watchURL } from '../TitleDetail';
 import { titleURL } from '../components';
 import { recordRecent } from '../history';
+import { useScrollMemory } from '../useScrollMemory';
 
 const RANGE_SIZE = 100;
 const AUTO_NEXT_KEY = 'media-auto-next';
@@ -98,6 +99,9 @@ export default function SiteWatch() {
     if (detail) document.title = [detail.title, selectedEpisode && nameOf(selectedEpisode), t('cms.brandName')].filter(Boolean).join(' · ');
   }, [detail, selectedEpisode?.id]);
 
+  // Choosing an episode below the player also brings the player back into view.
+  useScrollMemory(!loading);
+
   const selectEpisode = (line: SiteLine, episode: SiteEpisode) => {
     const saved = readProgress(itemId);
     setStartTime(saved?.episodeId === episode.id ? saved.time : 0);
@@ -118,110 +122,105 @@ export default function SiteWatch() {
 
   if (loading || !detail) {
     return (
-      <ConfigProvider theme={siteTheme}>
-        <div className="mp-page mp-center">
+      <SiteLayout flush>
+        <div className="mp-center">
           {loading ? <Spin size="large" /> : <Empty description={t('cms.site.watch.notFound')}><Link to="/"><Button>{t('cms.site.watch.home')}</Button></Link></Empty>}
         </div>
-      </ConfigProvider>
+      </SiteLayout>
     );
   }
 
   const description = describe(detail.description);
   const item: MediaItem = { ...detail, status: 'active' };
   const visible = ordered.slice(range * RANGE_SIZE, (range + 1) * RANGE_SIZE);
-  const lineIndex = selectedLine ? lines.indexOf(selectedLine) : -1;
+  const showEpisodes = (selectedLine?.episodes.length || 0) > 1;
   return (
-    <ConfigProvider theme={siteTheme}>
-      <div className="mp-page">
-        {detail.coverUrl && <img className="mp-backdrop" src={detail.coverUrl} alt="" aria-hidden referrerPolicy="no-referrer" onError={event => { event.currentTarget.style.display = 'none'; }} />}
-        <header className="mp-topbar">
-          <Link className="mp-back" to="/"><LeftOutlined /> {t('cms.brandName')}</Link>
-          <div className="mp-topbar-title"><Link to={titleURL(detail.id)}>{detail.title}</Link>{selectedEpisode && <em>{nameOf(selectedEpisode)}</em>}</div>
-        </header>
-
-        <div className="mp-layout">
-          <main className="mp-main">
-            <div className="mp-stage">
-              <PlayerHost source={source} startTime={startTime} reloadKey={reloadKey}
-                onReady={at => { setPlayerState('ready'); if (at) message.info(t('cms.site.watch.resumed', { time: clockText(at) })); }}
-                onFailure={setPlayerState}
-                onTime={time => { position.current.time = time; if (Math.abs(time - position.current.saved) >= 5) { position.current.saved = time; save(time); } }}
-                onPlayingChange={value => { setPlaying(value); if (!value) save(); }}
-                onEnded={() => { if (autoNext && hasNext) moveEpisode(1); }} />
-              {playerState === 'loading' && selectedEpisode && <div className="mp-overlay mp-overlay-passive"><Spin size="large" /><div className="mp-overlay-desc">{t('cms.site.watch.loading')}</div></div>}
-              {(playerState === 'blocked' || playerState === 'unsupported') && (
-                <div className="mp-overlay">
-                  <div className="mp-overlay-title">{t('cms.site.watch.failedTitle')}</div>
-                  <div className="mp-overlay-desc">{playerState === 'unsupported' ? t('cms.site.watch.unsupported') : t('cms.site.watch.blocked')}</div>
-                  <Space wrap>
-                    <Button type="primary" icon={<ReloadOutlined />} onClick={() => setReloadKey(key => key + 1)}>{t('cms.site.watch.retry')}</Button>
-                    {nextLine && <Button icon={<SwapOutlined />} onClick={() => switchLine(nextLine)}>{t('cms.site.watch.otherLine')}</Button>}
-                    <Button icon={<ExportOutlined />} onClick={openOriginal}>{t('cms.site.watch.original')}</Button>
-                  </Space>
-                </div>
-              )}
-              {!selectedEpisode && <div className="mp-overlay"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('cms.site.detail.noLines')} /></div>}
+    <SiteLayout flush>
+      <div className="mp-band">
+        <div className="mp-stage">
+          <PlayerHost source={source} startTime={startTime} reloadKey={reloadKey}
+            onReady={at => { setPlayerState('ready'); if (at) message.info(t('cms.site.watch.resumed', { time: clockText(at) })); }}
+            onFailure={setPlayerState}
+            onTime={time => { position.current.time = time; if (Math.abs(time - position.current.saved) >= 5) { position.current.saved = time; save(time); } }}
+            onPlayingChange={value => { setPlaying(value); if (!value) save(); }}
+            onEnded={() => { if (autoNext && hasNext) moveEpisode(1); }} />
+          {playerState === 'loading' && selectedEpisode && <div className="mp-overlay mp-overlay-passive"><Spin size="large" /><div className="mp-overlay-desc">{t('cms.site.watch.loading')}</div></div>}
+          {(playerState === 'blocked' || playerState === 'unsupported') && (
+            <div className="mp-overlay">
+              <div className="mp-overlay-title">{t('cms.site.watch.failedTitle')}</div>
+              <div className="mp-overlay-desc">{playerState === 'unsupported' ? t('cms.site.watch.unsupported') : t('cms.site.watch.blocked')}</div>
+              <Space wrap>
+                <Button type="primary" icon={<ReloadOutlined />} onClick={() => setReloadKey(key => key + 1)}>{t('cms.site.watch.retry')}</Button>
+                {nextLine && <Button icon={<SwapOutlined />} onClick={() => switchLine(nextLine)}>{t('cms.site.watch.otherLine')}</Button>}
+                <Button icon={<ExportOutlined />} onClick={openOriginal}>{t('cms.site.watch.original')}</Button>
+              </Space>
             </div>
+          )}
+          {!selectedEpisode && <div className="mp-overlay"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('cms.site.detail.noLines')} /></div>}
+        </div>
+      </div>
 
-            <div className="mp-controls">
-              <div className="mp-now">
-                <span className="mp-now-label">{t('cms.site.watch.nowPlaying')}</span>
-                <b>{selectedEpisode ? nameOf(selectedEpisode) : '—'}</b>
-                {selectedLine && <span className="mp-now-line">{lineLabel(selectedLine, lineIndex)}</span>}
-              </div>
-              <Space wrap size={8}>
+      <div className="mp-content">
+        <div className="mp-bar">
+          <div className="mp-heading">
+            <h1><Link to={titleURL(detail.id)}>{detail.title}</Link></h1>
+            {selectedEpisode && <span>{nameOf(selectedEpisode)}</span>}
+          </div>
+          <Space wrap size={8}>
+            {showEpisodes && (
+              <>
                 <Button icon={<StepBackwardOutlined />} disabled={!hasPrev} onClick={() => moveEpisode(-1)}>{t('cms.site.watch.previous')}</Button>
                 <Button icon={<StepForwardOutlined />} disabled={!hasNext} onClick={() => moveEpisode(1)}>{t('cms.site.watch.next')}</Button>
                 <span className="mp-autonext"><Switch id="mp-autonext" size="small" checked={autoNext} onChange={toggleAutoNext} /><label htmlFor="mp-autonext">{t('cms.site.watch.autoNext')}</label></span>
-                <Tooltip title={t('cms.site.watch.copy')}><Button type="text" icon={<CopyOutlined />} aria-label={t('cms.site.watch.copy')} disabled={!selectedEpisode} onClick={() => selectedEpisode && copyText(selectedEpisode.url, t('cms.site.watch.copied'))} /></Tooltip>
-                <Tooltip title={t('cms.site.watch.original')}><Button type="text" icon={<ExportOutlined />} aria-label={t('cms.site.watch.original')} disabled={!selectedEpisode} onClick={openOriginal} /></Tooltip>
-              </Space>
-            </div>
-
-            <section className="mp-info">
-              <Cover url={detail.coverUrl} title={detail.title} className="mp-cover" />
-              <div>
-                <h1>{detail.title}</h1>
-                {detail.originalTitle && detail.originalTitle !== detail.title && <div className="mp-original">{detail.originalTitle}</div>}
-                <div><TypeTags value={detail.mediaType} /><Facts item={item} /></div>
-                <GenreTags value={detail.genres} />
-                <People item={item} />
-                <Typography.Paragraph className="mp-description" ellipsis={description ? { rows: 3, expandable: 'collapsible', symbol: expanded => (expanded ? t('cms.site.detail.collapse') : t('cms.site.detail.expand')) } : false}>
-                  {description || t('cms.site.detail.noDescription')}
-                </Typography.Paragraph>
-              </div>
-            </section>
-          </main>
-
-          <aside className="mp-sidebar">
-            <div className="mp-sidebar-head">
-              <b>{t('cms.site.watch.episodes')}</b>
-              {selectedLine && <span className="mp-count">{t('cms.site.detail.episodeCount', { n: selectedLine.episodes.length })}</span>}
-              {(selectedLine?.episodes.length || 0) > 1 && (
-                <Button size="small" type="text" icon={reverse ? <SortDescendingOutlined /> : <SortAscendingOutlined />} onClick={() => setReverse(!reverse)}>{reverse ? t('cms.site.detail.descending') : t('cms.site.detail.ascending')}</Button>
-              )}
-            </div>
+              </>
+            )}
             {lines.length > 1 && (
-              <Select className="mp-line-select" value={selectedLine?.id} onChange={id => switchLine(lines.find(line => line.id === id))}
+              <Select className="mp-line-select" aria-label={t('cms.site.watch.line')} value={selectedLine?.id} onChange={id => switchLine(lines.find(line => line.id === id))} popupMatchSelectWidth={false}
                 options={lines.map((line, index) => ({ value: line.id, label: `${lineLabel(line, index)} · ${t('cms.site.detail.episodeCount', { n: line.episodes.length })}` }))} />
             )}
-            <EpisodeRanges total={ordered.length} size={RANGE_SIZE} reverse={reverse} value={range} onChange={setRange} />
-            <div className="mp-episode-grid" ref={grid}>
-              {visible.map(episode => {
-                const active = episode.id === selectedEpisode?.id;
-                return (
-                  <button key={episode.id} type="button" title={nameOf(episode)} aria-pressed={active} className={`mp-episode${active ? ' is-active' : ''}`} onClick={() => selectedLine && selectEpisode(selectedLine, episode)}>
-                    {active && <span className={`mp-eq${playing ? ' is-playing' : ''}`}><i /><i /><i /></span>}
-                    <span>{nameOf(episode)}</span>
-                  </button>
-                );
-              })}
-              {!visible.length && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('cms.site.detail.noLines')} />}
+            <Tooltip title={t('cms.site.watch.copy')}><Button type="text" icon={<CopyOutlined />} aria-label={t('cms.site.watch.copy')} disabled={!selectedEpisode} onClick={() => selectedEpisode && copyText(selectedEpisode.url, t('cms.site.watch.copied'))} /></Tooltip>
+            <Tooltip title={t('cms.site.watch.original')}><Button type="text" icon={<ExportOutlined />} aria-label={t('cms.site.watch.original')} disabled={!selectedEpisode} onClick={openOriginal} /></Tooltip>
+          </Space>
+        </div>
+
+        <div className={`mp-details${showEpisodes ? '' : ' is-solo'}`}>
+          <section className="mp-info">
+            <Cover url={detail.coverUrl} title={detail.title} className="mp-cover" />
+            <div>
+              {detail.originalTitle && detail.originalTitle !== detail.title && <div className="mp-original">{detail.originalTitle}</div>}
+              <div className="mp-facts"><TypeTags value={detail.mediaType} /><Facts item={item} /></div>
+              <GenreTags value={detail.genres} />
+              <People item={item} />
+              <Typography.Paragraph className="mp-description" ellipsis={description ? { rows: 4, expandable: 'collapsible', symbol: expanded => (expanded ? t('cms.site.detail.collapse') : t('cms.site.detail.expand')) } : false}>
+                {description || t('cms.site.detail.noDescription')}
+              </Typography.Paragraph>
+              <p className="mp-note">{t('cms.site.watch.note')}</p>
             </div>
-            <p className="mp-note">{t('cms.site.watch.note')}</p>
-          </aside>
+          </section>
+
+          {showEpisodes && (
+            <aside className="mp-episodes">
+              <div className="mp-episodes-head">
+                <b>{t('cms.site.watch.episodes')}</b>
+                <span className="mp-count">{t('cms.site.detail.episodeCount', { n: selectedLine?.episodes.length || 0 })}</span>
+                <Button size="small" type="text" icon={reverse ? <SortDescendingOutlined /> : <SortAscendingOutlined />} onClick={() => setReverse(!reverse)}>{reverse ? t('cms.site.detail.descending') : t('cms.site.detail.ascending')}</Button>
+              </div>
+              <EpisodeRanges total={ordered.length} size={RANGE_SIZE} reverse={reverse} value={range} onChange={setRange} />
+              <div className="mp-episode-grid" ref={grid}>
+                {visible.map(episode => {
+                  const active = episode.id === selectedEpisode?.id;
+                  return (
+                    <button key={episode.id} type="button" title={nameOf(episode)} aria-pressed={active} className={`mp-episode${active ? ' is-active' : ''}`} onClick={() => selectedLine && selectEpisode(selectedLine, episode)}>
+                      {active && <span className={`mp-eq${playing ? ' is-playing' : ''}`}><i /><i /><i /></span>}
+                      <span>{nameOf(episode)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </aside>
+          )}
         </div>
       </div>
-    </ConfigProvider>
+    </SiteLayout>
   );
 }
