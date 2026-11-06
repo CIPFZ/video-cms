@@ -88,6 +88,9 @@ const (
 
 var publicYear = regexp.MustCompile(`^(19|20)\d{2}$`)
 
+// playableTypes are the stream types the site's player handles.
+var playableTypes = map[string]bool{"m3u8": true, "mp4": true}
+
 // playable keeps titles that an enabled, running source still offers.
 func (s *Service) playable(ctx context.Context) *gorm.DB {
 	return s.db.WithContext(ctx).Model(&Item{}).Where(`EXISTS (SELECT 1 FROM media_source_items si JOIN media_sources src ON src.id = si.source_id
@@ -199,7 +202,7 @@ func (s *Service) publicCards(ctx context.Context, rows []Item) ([]PublicCard, e
 		Joins("JOIN media_sources src ON src.id = si.source_id").
 		Joins("JOIN media_play_lines l ON l.source_item_id = si.id").
 		Joins("JOIN media_play_episodes e ON e.play_line_id = l.id").
-		Where("si.cms_media_id IN ? AND si.state = ? AND src.enabled = ? AND src.suspended = ? AND l.enabled = ?", ids, "active", true, false, true).
+		Where("si.cms_media_id IN ? AND si.state = ? AND src.enabled = ? AND src.suspended = ? AND l.enabled = ? AND e.stream_type IN ?", ids, "active", true, false, true, []string{"m3u8", "mp4"}).
 		Group("si.cms_media_id, l.id").Scan(&counts).Error
 	if err != nil {
 		return nil, err
@@ -227,14 +230,19 @@ func (s *Service) PublicDetail(ctx context.Context, id uint) (PublicDetail, erro
 	item := detail.Item
 	out := PublicDetail{PublicCard: publicCard(item), OriginalTitle: item.OriginalTitle, Language: item.Language,
 		Director: item.Director, Actors: item.Actors, Description: item.Description, Lines: []PublicLine{}}
+	// Higher-priority sites first, so "line 1" is the most dependable one.
+	sort.SliceStable(detail.Playbacks, func(i, j int) bool { return detail.Playbacks[i].Source.Priority < detail.Playbacks[j].Source.Priority })
 	for _, playback := range detail.Playbacks {
 		for _, line := range playback.Lines {
-			if len(line.Episodes) == 0 {
-				continue
+			episodes := []PublicEpisode{}
+			for _, ep := range line.Episodes {
+				// Share links of "cloud" lines open the source's web player and cannot be played here.
+				if playableTypes[ep.StreamType] {
+					episodes = append(episodes, PublicEpisode{ID: ep.ID, EpisodeNo: ep.EpisodeNo, Name: ep.EpisodeName, URL: ep.StreamURL, Type: ep.StreamType})
+				}
 			}
-			episodes := make([]PublicEpisode, len(line.Episodes))
-			for i, ep := range line.Episodes {
-				episodes[i] = PublicEpisode{ID: ep.ID, EpisodeNo: ep.EpisodeNo, Name: ep.EpisodeName, URL: ep.StreamURL, Type: ep.StreamType}
+			if len(episodes) == 0 {
+				continue
 			}
 			out.Lines = append(out.Lines, PublicLine{ID: line.ID, Name: line.LineName, Episodes: episodes})
 			out.Episodes = max(out.Episodes, len(episodes))

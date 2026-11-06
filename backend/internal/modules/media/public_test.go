@@ -166,3 +166,30 @@ func TestPublicStreamOnlyServesListedEpisodes(t *testing.T) {
 	require.ErrorIs(t, f.svc.publicEpisode(ctx, episodeOf(f.offerless)), errEpisodeUnavailable)
 	require.ErrorIs(t, f.svc.publicEpisode(ctx, 99999), errEpisodeUnavailable)
 }
+
+func TestPublicDetailOrdersLinesAndDropsShareLinks(t *testing.T) {
+	f := newPublicFixture(t)
+	ctx := context.Background()
+	// A second, preferred site offers the movie too, with a share-page line beside its m3u8 line.
+	better := Source{Name: "better", APIURL: "https://better.example/api.php/provide/vod/", APIType: "json", Enabled: true, Priority: 1}
+	require.NoError(t, f.db.Create(&better).Error)
+	link := SourceItem{SourceID: better.ID, CMSMediaID: &f.movie.ID, ExternalID: "b1", ExternalTitle: f.movie.Title, State: "active"}
+	require.NoError(t, f.db.Create(&link).Error)
+	for i, kind := range []string{"other", "m3u8"} {
+		line := PlayLine{SourceItemID: link.ID, LineName: "better-" + kind, LineKey: kind, SortOrder: i, Enabled: true}
+		require.NoError(t, f.db.Create(&line).Error)
+		require.NoError(t, f.db.Create(&PlayEpisode{PlayLineID: line.ID, EpisodeNo: 1, StreamURL: "https://better.example/" + kind, StreamType: kind}).Error)
+	}
+	require.NoError(t, f.db.Model(&f.live).Update("priority", 50).Error)
+
+	detail, err := f.svc.PublicDetail(ctx, f.movie.ID)
+	require.NoError(t, err)
+	names := []string{}
+	for _, line := range detail.Lines {
+		names = append(names, line.Name)
+	}
+	require.Equal(t, []string{"better-m3u8", "m3u8"}, names, "preferred site first, share-page line dropped")
+	page, err := f.svc.ListPublic(ctx, PublicFilter{Query: f.movie.Title})
+	require.NoError(t, err)
+	require.Equal(t, 1, page["list"].([]PublicCard)[0].Episodes, "share-page episodes are not counted")
+}

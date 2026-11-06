@@ -110,7 +110,7 @@ func TestMediaRunItemsUpgradeKeepsGrantsAndEditedSchedules(t *testing.T) {
 	var listSources model.SysApi
 	require.NoError(t, db.Where("path = ? AND method = ?", "/custom/media/sources", "GET").First(&listSources).Error)
 	require.NoError(t, db.Where("api_id = ? AND authority_id = ?", listSources.ID, 1).Delete(&model.SysAuthorityApi{}).Error)
-	require.NoError(t, db.Where("name IN ?", []string{mediaRunItemsVersion, Latest}).Delete(&schemaMigration{}).Error)
+	require.NoError(t, db.Where("name IN ?", []string{mediaRunItemsVersion, mediaPublicVersion, Latest}).Delete(&schemaMigration{}).Error)
 	require.NoError(t, db.Migrator().DropTable(&media.CollectionRunItem{}))
 	require.NoError(t, db.Migrator().DropIndex(&media.Item{}, mediaItemsUpdatedIndex))
 
@@ -131,4 +131,56 @@ func TestMediaRunItemsUpgradeKeepsGrantsAndEditedSchedules(t *testing.T) {
 	require.True(t, untouched.NextRunAt.After(time.Now()))
 	require.NoError(t, db.First(&edited, edited.ID).Error)
 	require.Equal(t, "30 3 * * 0", edited.Cron)
+}
+
+func TestBuiltinSourcesUpgradeAddsSitesAndKeepsEdits(t *testing.T) {
+	db := editionTestDB(t)
+	t.Setenv("SEED_ADMIN_ENABLED", "true")
+	t.Setenv("SEED_ADMIN_PASSWORD", "migration-password")
+	cfg := &config.Config{System: config.System{Environment: "dev", RouterPrefix: "/api/v1"}}
+	require.NoError(t, Run(context.Background(), db, cfg, zap.NewNop()))
+	var count int64
+	require.NoError(t, db.Model(&media.Source{}).Count(&count).Error)
+	require.EqualValues(t, len(media.BuiltinSources), count, "a fresh install gets every built-in site")
+	var fresh media.Source
+	require.NoError(t, db.Where("api_url = ?", media.BuiltinSources[3].APIURL).First(&fresh).Error)
+	require.True(t, fresh.Enabled)
+	require.True(t, fresh.FullEnabled)
+	require.Equal(t, media.BuiltinDenyCategories, fresh.DenyCategories)
+
+	// An installation from before this step: the first three sites only, one of them edited.
+	require.NoError(t, db.Where("api_url NOT IN ?", []string{media.BuiltinSources[0].APIURL, media.BuiltinSources[1].APIURL, media.BuiltinSources[2].APIURL}).Delete(&media.Source{}).Error)
+	var first, second, third media.Source
+	require.NoError(t, db.Where("api_url = ?", media.BuiltinSources[0].APIURL).First(&first).Error)
+	require.NoError(t, db.Where("api_url = ?", media.BuiltinSources[1].APIURL).First(&second).Error)
+	require.NoError(t, db.Where("api_url = ?", media.BuiltinSources[2].APIURL).First(&third).Error)
+	require.NoError(t, db.Model(&first).Updates(map[string]any{"deny_categories": media.LegacyDenyCategories, "full_enabled": false}).Error)
+	require.NoError(t, db.Model(&second).Updates(map[string]any{"deny_categories": "伦理片,恐怖片", "enabled": false}).Error)
+	schedule := func(src media.Source, enabled bool, status string) media.CollectionSchedule {
+		row := media.CollectionSchedule{SourceID: src.ID, Kind: "incremental", Cron: "15 */3 * * *", NextRunAt: time.Now().Add(time.Hour), LastStatus: status}
+		require.NoError(t, db.Create(&row).Error)
+		require.NoError(t, db.Model(&row).Update("enabled", enabled).Error)
+		return row
+	}
+	untouched, used, off := schedule(first, false, "未启用"), schedule(second, false, "success"), schedule(third, false, "未启用")
+	require.NoError(t, db.Model(&off).Update("last_run_at", time.Now()).Error)
+	require.NoError(t, db.Where("name = ?", Latest).Delete(&schemaMigration{}).Error)
+
+	require.NoError(t, Run(context.Background(), db, cfg, zap.NewNop()))
+	require.NoError(t, Check(db))
+	require.NoError(t, db.Model(&media.Source{}).Count(&count).Error)
+	require.EqualValues(t, len(media.BuiltinSources), count)
+	require.NoError(t, db.First(&first, first.ID).Error)
+	require.Equal(t, media.BuiltinDenyCategories, first.DenyCategories, "an unedited deny list gains the new categories")
+	require.True(t, first.FullEnabled)
+	require.NoError(t, db.First(&second, second.ID).Error)
+	require.Equal(t, "伦理片,恐怖片", second.DenyCategories, "an edited deny list is kept")
+	require.False(t, second.Enabled, "a disabled site stays disabled")
+	require.NoError(t, db.First(&untouched, untouched.ID).Error)
+	require.True(t, untouched.Enabled, "an untouched incremental schedule is switched on")
+	require.False(t, untouched.NextRunAt.After(time.Now()))
+	for _, row := range []media.CollectionSchedule{used, off} {
+		require.NoError(t, db.First(&row, row.ID).Error)
+		require.False(t, row.Enabled, "a schedule that has been used keeps its setting")
+	}
 }

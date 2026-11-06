@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/require"
@@ -131,4 +132,24 @@ func TestHealthChecksStayOutOfTheCollectionLog(t *testing.T) {
 	require.NoError(t, svc.db.Model(&src).Update("enabled", false).Error)
 	status, _ = svc.scheduledHealthCheck(context.Background(), src.ID)
 	require.Equal(t, "skipped", status)
+}
+
+func TestBuiltinSourcesCollectFromTheStart(t *testing.T) {
+	svc, custom := collectorFixture(t)
+	builtin := NewBuiltinSource(BuiltinSources[0])
+	require.NoError(t, svc.db.Create(&builtin).Error)
+	for _, src := range []Source{custom, builtin} {
+		require.NoError(t, seedSchedules(svc.db, src))
+	}
+	var rows []CollectionSchedule
+	require.NoError(t, svc.db.Where("kind = ?", "incremental").Order("source_id").Find(&rows).Error)
+	require.Len(t, rows, 2)
+	require.False(t, rows[0].Enabled, "a custom site starts after its trial")
+	require.True(t, rows[1].Enabled, "a built-in site collects right away")
+	require.False(t, rows[1].NextRunAt.After(time.Now()))
+	var full CollectionSchedule
+	require.NoError(t, svc.db.Where("source_id = ? AND kind = ?", builtin.ID, "full").First(&full).Error)
+	require.False(t, full.Enabled, "full collection stays a manual or monthly decision")
+	require.True(t, IsBuiltinSource(" "+BuiltinSources[5].APIURL))
+	require.False(t, IsBuiltinSource(custom.APIURL))
 }

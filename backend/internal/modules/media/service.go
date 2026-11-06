@@ -87,7 +87,7 @@ func (s *Service) CreateSource(ctx context.Context, item Source) (Source, error)
 			}
 			item.Enabled = false
 		}
-		return seedSchedules(tx, item.ID)
+		return seedSchedules(tx, item)
 	})
 	return item, err
 }

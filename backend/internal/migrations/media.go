@@ -148,13 +148,11 @@ func applyMediaRunItems(tx *gorm.DB, prefix string) error {
 		Updates(map[string]any{"cron": media.DefaultFullCron, "next_run_at": schedule.Next(time.Now())}).Error
 }
 
+// seedMediaSources adds the built-in sites a database does not have yet;
+// existing rows, including ones an administrator edited or disabled, are kept.
 func seedMediaSources(tx *gorm.DB) error {
-	defaults := []media.Source{
-		{Name: "暴风资源", APIURL: "https://bfzyapi.com/api.php/provide/vod/", APIType: "json", Enabled: true, Priority: 10, RequestIntervalSeconds: 3, TimeoutSeconds: 15, DenyCategories: "伦理片,伦理,成人,色情,短视频,直播"},
-		{Name: "无尽资源", APIURL: "https://api.wujinapi.com/api.php/provide/vod/", APIType: "json", Enabled: true, Priority: 20, RequestIntervalSeconds: 3, TimeoutSeconds: 15, DenyCategories: "伦理片,伦理,成人,色情,短视频,直播"},
-		{Name: "豪华资源", APIURL: "https://hhzyapi.com/api.php/provide/vod/at/json", APIType: "json", Enabled: true, Priority: 30, RequestIntervalSeconds: 3, TimeoutSeconds: 15, DenyCategories: "伦理片,伦理,成人,色情,短视频,直播"},
-	}
-	for _, source := range defaults {
+	for _, builtin := range media.BuiltinSources {
+		source := media.NewBuiltinSource(builtin)
 		var existing media.Source
 		err := tx.Where("api_url = ?", source.APIURL).First(&existing).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -164,6 +162,33 @@ func seedMediaSources(tx *gorm.DB) error {
 			continue
 		}
 		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// applyBuiltinSources brings an installed edition up to the current built-in
+// list. The first three sites keep their settings, except that an unedited deny
+// list gains the categories the new sites use and full collection is allowed,
+// and an incremental schedule left at its untouched default is switched on.
+func applyBuiltinSources(tx *gorm.DB, _ string) error {
+	if err := seedMediaSources(tx); err != nil {
+		return err
+	}
+	for _, builtin := range media.BuiltinSources {
+		var source media.Source
+		if err := tx.Where("api_url = ?", builtin.APIURL).First(&source).Error; err != nil {
+			return err
+		}
+		if source.DenyCategories == media.LegacyDenyCategories {
+			if err := tx.Model(&source).Updates(map[string]any{"deny_categories": media.BuiltinDenyCategories, "full_enabled": true}).Error; err != nil {
+				return err
+			}
+		}
+		if err := tx.Model(&media.CollectionSchedule{}).
+			Where("source_id = ? AND kind = ? AND enabled = ? AND last_run_at IS NULL AND last_status = ?", source.ID, "incremental", false, "未启用").
+			Updates(map[string]any{"enabled": true, "next_run_at": time.Now(), "last_status": ""}).Error; err != nil {
 			return err
 		}
 	}

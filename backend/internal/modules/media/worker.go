@@ -43,15 +43,24 @@ func (s *Service) withSource(ctx context.Context, id uint, fn func(context.Conte
 	defer cancel()
 	return fn(bounded, src)
 }
-func seedSchedules(tx *gorm.DB, id uint) error {
+func seedSchedules(tx *gorm.DB, src Source) error {
 	now := time.Now()
+	builtin := IsBuiltinSource(src.APIURL)
 	for kind, spec := range map[string]string{"health": "*/20 * * * *", "incremental": "15 */3 * * *", "full": DefaultFullCron} {
 		schedule, _ := cron.ParseStandard("CRON_TZ=Asia/Shanghai " + spec)
-		row := CollectionSchedule{SourceID: id, Kind: kind, Cron: spec, Enabled: true, NextRunAt: schedule.Next(now)}
-		if e := tx.Where("source_id = ? AND kind = ?", id, kind).FirstOrCreate(&row).Error; e != nil {
+		next := schedule.Next(now)
+		// Built-in sites start collecting on a fresh install: the first incremental run is due now.
+		if builtin && kind == "incremental" {
+			next = now
+		}
+		row := CollectionSchedule{SourceID: src.ID, Kind: kind, Cron: spec, Enabled: true, NextRunAt: next}
+		if e := tx.Where("source_id = ? AND kind = ?", src.ID, kind).FirstOrCreate(&row).Error; e != nil {
 			return e
 		}
-		// Scheduling is explicitly activated after the trial; existing settings are preserved.
+		if builtin && kind == "incremental" {
+			continue
+		}
+		// Other scheduling is explicitly activated after a trial; existing settings are preserved.
 		if row.LastStatus == "" && row.CreatedAt.Equal(row.UpdatedAt) && kind != "health" {
 			if e := tx.Model(&row).Updates(map[string]any{"enabled": false, "last_status": "未启用"}).Error; e != nil {
 				return e
@@ -66,7 +75,7 @@ func (s *Service) Start(ctx context.Context) error {
 		return e
 	}
 	for _, src := range sources {
-		if e := seedSchedules(s.db, src.ID); e != nil {
+		if e := seedSchedules(s.db, src); e != nil {
 			return e
 		}
 	}
