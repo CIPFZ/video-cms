@@ -13,9 +13,11 @@ RUN go test -trimpath -p 2 ./... && \
 
 FROM alpine:3.23
 WORKDIR /app
+ARG ALPINE_MIRROR=
 
 # Required for timezones and ca-certs
-RUN apk --no-cache add tzdata ca-certificates
+RUN if [ -n "$ALPINE_MIRROR" ]; then sed -i "s#https://dl-cdn.alpinelinux.org/alpine#${ALPINE_MIRROR%/}#" /etc/apk/repositories; fi && \
+    apk --no-cache add tzdata ca-certificates
 
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate .

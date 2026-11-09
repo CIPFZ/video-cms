@@ -66,6 +66,7 @@ services:
       context: ../../backend
       args:
         GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
+        ALPINE_MIRROR: ${ALPINE_MIRROR:-}
     restart: unless-stopped
     init: true
     environment:

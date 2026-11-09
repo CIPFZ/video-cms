@@ -13,7 +13,7 @@ python3 deploy/local/smoke.py
 
 需要 Docker Engine、Docker Compose v2 和 Python 3；Go 与前端构建在容器中完成。
 `DOCKER_BUILDKIT=0` 兼容本机没有 Buildx 插件的环境；已安装 Buildx 时可去掉这个变量。
-无法访问 proxy.golang.org 或 npm 官方源时，在 `.env` 中追加构建镜像源，例如 `GOPROXY=https://goproxy.cn,direct` 和 `NPM_REGISTRY=https://registry.npmmirror.com/`；不设置时使用官方源。
+无法访问 proxy.golang.org 或 npm 官方源时，在 `.env` 中追加构建镜像源，例如 `GOPROXY=https://goproxy.cn,direct` 和 `NPM_REGISTRY=https://registry.npmmirror.com/`、`ALPINE_MIRROR=https://mirrors.aliyun.com/alpine`；不设置时使用官方源。
 后端构建包含 Go 测试，前端使用已锁定依赖执行 `npm ci` 和生产构建。
 
 访问 `http://localhost:8080`；从其他机器访问时，将 localhost 替换为此开发机地址。
