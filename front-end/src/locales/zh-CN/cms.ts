@@ -544,6 +544,8 @@ export default {
   'cms.site.row.continue': '继续观看',
   'cms.site.row.more': '查看全部',
   'cms.site.row.forget': '从继续观看中移除《{title}》',
+  'cms.site.row.resume': '继续观看《{title}》',
+  'cms.site.row.stoppedAt': '看到 {time}',
   'cms.site.card.episodes': '共 {n} 集',
   'cms.site.browse.title': '片库',
   'cms.site.browse.searching': '搜索结果：{q}',

@@ -582,6 +582,8 @@ export default {
   'cms.site.row.continue': 'Continue watching',
   'cms.site.row.more': 'View all',
   'cms.site.row.forget': 'Remove “{title}” from Continue watching',
+  'cms.site.row.resume': 'Continue watching “{title}”',
+  'cms.site.row.stoppedAt': 'Stopped at {time}',
   'cms.site.card.episodes': '{n} episodes',
   'cms.site.browse.title': 'Library',
   'cms.site.browse.searching': 'Results for: {q}',

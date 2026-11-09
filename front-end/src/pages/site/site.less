@@ -32,7 +32,7 @@
 .site-row-head h2 { margin: 0; color: #fff; font-size: 20px; font-weight: 650; }
 .site-row-more { display: inline-flex; align-items: center; gap: 4px; color: @muted; font-size: 13px; }
 .site-row-more:hover { color: #fff; }
-.site-row-track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr); gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: #ffffff22 transparent; }
+.site-row-track { display: grid; grid-auto-flow: column; grid-auto-columns: max(150px, calc((100% - 7 * 16px) / 8)); gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: #ffffff22 transparent; }
 .site-row-track > * { scroll-snap-align: start; }
 .site-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px 16px; }
 .site-card { display: block; min-width: 0; color: @text; }
@@ -47,10 +47,28 @@
 .site-card-skeleton, .site-card-skeleton.ant-skeleton-element { display: block; width: 100% !important; }
 .site-card-skeleton .ant-skeleton-node { width: 100% !important; height: auto !important; aspect-ratio: 2 / 3; border-radius: 10px; }
 .site-page .media-cover-placeholder { background: linear-gradient(140deg, #1f2937, #111827); color: #4b5563; }
-.site-recent { position: relative; }
-.site-recent-remove { position: absolute !important; top: 6px; right: 6px; opacity: 0; transition: opacity .15s; }
-.site-recent:hover .site-recent-remove, .site-recent-remove:focus-visible { opacity: 1; }
-@media (hover: none) { .site-recent-remove { opacity: 1; } }
+
+// Continue watching: compact tiles, four across, poster thumbnail beside the title and progress.
+.site-row-resume { margin-bottom: 32px; }
+.site-row-resume .site-row-track { grid-auto-columns: max(260px, calc((100% - 3 * 16px) / 4)); }
+.site-resume { position: relative; min-width: 0; border-radius: 12px; background: @surface; transition: background .2s; }
+.site-resume:hover { background: #1b2232; }
+.site-resume-link { display: flex; align-items: center; gap: 14px; padding: 10px 40px 10px 10px; border-radius: 12px; color: @text; }
+.site-resume-link:hover { color: #fff; }
+.site-resume-link:focus-visible { outline: 2px solid @accent; outline-offset: 2px; }
+.site-resume-cover { position: relative; flex: 0 0 56px; overflow: hidden; border-radius: 8px; }
+.site-resume-cover .media-cover { border-radius: 8px; background: @bg; }
+.site-resume-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #0008; color: #fff; font-size: 20px; opacity: 0; transition: opacity .2s; }
+.site-resume:hover .site-resume-play, .site-resume-link:focus-visible .site-resume-play { opacity: 1; }
+.site-resume-body { flex: 1; min-width: 0; }
+.site-resume-title { font-size: 14px; font-weight: 600; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-resume-meta { margin-top: 4px; color: @muted; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.site-resume-bar { height: 3px; margin-top: 10px; overflow: hidden; border-radius: 3px; background: #ffffff1a; }
+.site-resume-bar i { display: block; height: 100%; border-radius: 3px; background: @accent; }
+.site-resume-remove.ant-btn { position: absolute; top: 8px; right: 8px; color: @muted; opacity: 0; transition: opacity .15s; }
+.site-resume-remove.ant-btn:hover { color: #fff !important; background: #ffffff14 !important; }
+.site-resume:hover .site-resume-remove, .site-resume-remove:focus-visible { opacity: 1; }
+@media (hover: none) { .site-resume-remove.ant-btn { opacity: 1; } }
 
 // Browse filters
 .site-filters { margin-bottom: 24px; padding: 18px 20px; border-radius: 12px; background: @surface; }
@@ -102,6 +120,7 @@
   .site-header-inner, .site-main { padding-left: 14px; padding-right: 14px; }
   .site-grid { grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 18px 10px; }
   .site-row-track { grid-auto-columns: 120px; }
+  .site-row-resume .site-row-track { grid-auto-columns: 240px; }
   // One sideways-scrolling line per filter, so the posters stay on the first screen.
   .site-filters { padding: 12px 14px; }
   .site-filter-row { align-items: center; gap: 10px; padding: 4px 0; }

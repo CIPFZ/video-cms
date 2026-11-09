@@ -15,14 +15,14 @@ const badge = (card: SiteCard) => {
   return t('cms.site.card.episodes', { n: card.episodes });
 };
 
-export function PosterCard({ card, note }: { card: SiteCard; note?: string }) {
+export function PosterCard({ card }: { card: SiteCard }) {
   const meta = [card.year, card.area, splitList(card.mediaType).map(typeLabel)[0]].filter(Boolean).join(' · ');
   const label = badge(card);
   return (
     <Link to={titleURL(card.id)} className="site-card">
       <div className="site-card-poster"><Cover url={card.coverUrl} title={card.title} />{label && <span className="site-card-badge">{label}</span>}</div>
       <div className="site-card-title" title={card.title}>{card.title}</div>
-      <div className="site-card-meta">{note || meta || ' '}</div>
+      <div className="site-card-meta">{meta || ' '}</div>
     </Link>
   );
 }
@@ -37,9 +37,9 @@ export function GridSkeleton({ count = 12 }: { count?: number }) {
   return <div className="site-grid" aria-busy="true">{SKELETON_KEYS.slice(0, count).map(key => <div key={key} className="site-card"><Skeleton.Node active className="site-card-skeleton"><span /></Skeleton.Node><Skeleton active title={false} paragraph={{ rows: 2, width: ['80%', '50%'] }} /></div>)}</div>;
 }
 
-export function PosterRow({ title, more, children }: { title: string; more?: string; children: React.ReactNode }) {
+export function PosterRow({ title, more, className, children }: { title: string; more?: string; className?: string; children: React.ReactNode }) {
   return (
-    <section className="site-row">
+    <section className={['site-row', className].filter(Boolean).join(' ')}>
       <div className="site-row-head"><h2>{title}</h2>{more && <Link to={more} className="site-row-more">{t('cms.site.row.more')}<RightOutlined /></Link>}</div>
       <div className="site-row-track">{children}</div>
     </section>
