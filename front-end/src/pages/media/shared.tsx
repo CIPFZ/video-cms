@@ -75,7 +75,8 @@ export const copyText = (value: string, success = '已复制') => {
  else fallback();
 };
 
-export type WatchProgress = { lineId: number; episodeId: number; episodeTitle: string; time: number; updatedAt: number };
+// duration is absent in records saved before the player reported it.
+export type WatchProgress = { lineId: number; episodeId: number; episodeTitle: string; time: number; duration?: number; updatedAt: number };
 const progressKey = (itemId: number) => 'media-progress:' + itemId;
 export const readProgress = (itemId: number): WatchProgress | undefined => {
  try {

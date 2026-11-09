@@ -1,111 +1,97 @@
-import React, { useEffect, useRef } from 'react';
-import Hls from 'hls.js';
+import React, { useRef } from 'react';
+import { OtterPlayer } from '@otter-player/react';
+import { createVodPlayer } from '@otter-player/presets/vod';
+import type { Player } from '@otter-player/presets';
+import '@otter-player/ui-skin-default';
+import { currentLocale } from '@/i18n';
+import { failureKind, isAbort, isHlsSource, mimeType, resumePoint, shouldUseFallback, type PlayerFailure, type PlayerSource } from './playback';
 
-// The site's only contact with the video engine. Phase 1 plays through hls.js;
-// once @otter-player is on npm this file becomes <OtterPlayer create={createVodPlayer}>
-// with load(src, { startTime, autoplay }) and the store's time / ended state.
+// The site's only contact with the video engine: Otter's VOD preset with its default skin.
 
-export type PlayerSource = { src: string; fallbackSrc?: string; type?: string };
-export type PlayerFailure = 'blocked' | 'unsupported';
+export type { PlayerFailure, PlayerSource } from './playback';
 export type PlayerHostProps = {
   source?: PlayerSource;
+  /** Shown in the player's top bar and the Media Session. */
+  title?: string;
   /** Seconds to resume from; ignored near the start or the end. */
   startTime?: number;
   /** Changing it reloads the same source from the direct address. */
   reloadKey?: number;
   onReady?: (resumedAt: number) => void;
   onFailure?: (failure: PlayerFailure) => void;
-  onTime?: (seconds: number) => void;
+  onTime?: (seconds: number, duration: number) => void;
   onPlayingChange?: (playing: boolean) => void;
   onEnded?: () => void;
 };
+type Handlers = Omit<PlayerHostProps, 'source' | 'reloadKey'>;
 
-/** CDNs usually allow the browser to fetch directly; only a failure before the
- *  first frame (CORS, hotlink rules) moves playback to the site's proxy. */
-export function shouldUseFallback(attempt: { usingFallback: boolean; started: boolean; hasFallback: boolean }): boolean {
-  return attempt.hasFallback && !attempt.usingFallback && !attempt.started;
-}
+/** Loads the source into the player, moves to the proxy on an early failure and
+ *  reports progress; returns the teardown of what it started. */
+function play(player: Player, source: PlayerSource, handlers: { current: Handlers }): () => void {
+  let disposed = false;
+  let started = false;
+  let usingFallback = false;
+  let attempt = 0;
+  let failedAttempt = -1;
+  const wanted = resumePoint(handlers.current.startTime, NaN);
 
-export const isHlsSource = (source: PlayerSource) => {
-  const type = (source.type || '').toLowerCase();
-  return type === 'm3u8' || type === 'hls' || /\.m3u8(?:$|[?#])/i.test(source.src);
-};
-
-export function resumePoint(at: number | undefined, duration: number): number {
-  if (!at || at <= 5) return 0;
-  return Number.isFinite(duration) && at >= duration - 10 ? 0 : at;
-}
-
-export default function PlayerHost({ source, startTime, reloadKey, onReady, onFailure, onTime, onPlayingChange, onEnded }: PlayerHostProps) {
-  const video = useRef<HTMLVideoElement>(null);
-  // Callbacks change every render; the effect reads the latest through a ref.
-  const handlers = useRef({ onReady, onFailure, onTime, onPlayingChange, onEnded, startTime });
-  handlers.current = { onReady, onFailure, onTime, onPlayingChange, onEnded, startTime };
-
-  useEffect(() => {
-    const element = video.current;
-    if (!element || !source?.src) return undefined;
-    let disposed = false;
-    let hls: Hls | undefined;
-    let started = false;
-    let usingFallback = false;
-    const hlsSource = isHlsSource(source);
-
-    const detach = () => {
-      hls?.destroy();
-      hls = undefined;
-      element.removeAttribute('src');
-      element.load();
-    };
-    const attach = (url: string) => {
-      detach();
-      if (hlsSource && Hls.isSupported()) {
-        hls = new Hls({ enableWorker: true, lowLatencyMode: false });
-        hls.on(Hls.Events.ERROR, (_event, data) => { if (data.fatal) failed(); });
-        hls.loadSource(url);
-        hls.attachMedia(element);
-      } else if (!hlsSource || element.canPlayType('application/vnd.apple.mpegurl')) {
-        element.src = url;
-        element.load();
-      } else {
-        handlers.current.onFailure?.('unsupported');
-      }
-    };
-    const { fallbackSrc } = source;
-    const failed = () => {
-      if (disposed) return;
-      if (fallbackSrc && shouldUseFallback({ usingFallback, started, hasFallback: true })) {
-        usingFallback = true;
-        attach(fallbackSrc);
-        return;
-      }
-      handlers.current.onFailure?.('blocked');
-    };
-    const onMeta = () => {
-      if (disposed) return;
-      const at = resumePoint(handlers.current.startTime, element.duration);
-      if (at) element.currentTime = at;
+  const failed = (id: number, error: unknown) => {
+    // The load's rejection and the store's error report the same failure once.
+    if (disposed || id !== attempt || failedAttempt === id || isAbort(error)) return;
+    failedAttempt = id;
+    const kind = failureKind(error);
+    if (kind === 'blocked' && source.fallbackSrc && shouldUseFallback({ usingFallback, started, hasFallback: true })) {
+      usingFallback = true;
+      open(source.fallbackSrc);
+      return;
+    }
+    handlers.current.onFailure?.(kind);
+  };
+  // Otter retries a blocked playlist quietly for about 20 s before it gives up; one
+  // fetch of the playlist tells a CORS or hotlink refusal in a single request.
+  const preflight = new AbortController();
+  const openDirect = () => {
+    if (!source.fallbackSrc || !isHlsSource(source)) { open(source.src); return; }
+    const id = attempt;
+    fetch(source.src, { signal: preflight.signal }).then(response => {
+      if (!response.ok) throw Error(`playlist ${response.status}`);
+      if (!disposed) open(source.src);
+    }).catch(error => {
+      if (!isAbort(error)) failed(id, error);
+    });
+  };
+  const open = (src: string) => {
+    const id = ++attempt;
+    player.load({ src, type: mimeType(source) }, { startTime: wanted || undefined, autoplay: true }).then(() => {
+      if (disposed || id !== attempt) return;
+      // The duration is known only now: a position near the end starts over.
+      const at = resumePoint(wanted, player.store.getState().duration);
+      if (wanted && !at) player.store.dispatch('seek', { time: 0 });
       handlers.current.onReady?.(at);
-      void element.play().catch(() => undefined);
-    };
-    const onData = () => { started = true; };
-    const onTimeUpdate = () => handlers.current.onTime?.(element.currentTime);
-    const onPlay = () => handlers.current.onPlayingChange?.(true);
-    const onPause = () => handlers.current.onPlayingChange?.(false);
-    const onEnd = () => { handlers.current.onPlayingChange?.(false); handlers.current.onEnded?.(); };
-    // hls.js reports its own errors; the element's error covers native playback.
-    const onError = () => { if (!hls) failed(); };
-    const events: [string, () => void][] = [['loadedmetadata', onMeta], ['loadeddata', onData], ['timeupdate', onTimeUpdate], ['play', onPlay], ['pause', onPause], ['ended', onEnd], ['error', onError]];
-    for (const [name, fn] of events) element.addEventListener(name, fn);
-    attach(source.src);
-    return () => {
-      disposed = true;
-      for (const [name, fn] of events) element.removeEventListener(name, fn);
-      element.pause();
-      detach();
-    };
-  }, [source?.src, source?.fallbackSrc, source?.type, reloadKey]);
+    }, error => failed(id, error));
+  };
 
-  // biome-ignore lint/a11y/useMediaCaption: upstream streams carry no caption tracks to attach.
-  return <video ref={video} controls playsInline preload="metadata" />;
+  const unsubscribe = player.store.subscribe((state, prev) => {
+    if (disposed) return;
+    if (state.readyState >= 2) started = true;
+    if (state.currentTime !== prev.currentTime) handlers.current.onTime?.(state.currentTime, state.duration);
+    if (state.paused !== prev.paused) handlers.current.onPlayingChange?.(!state.paused);
+    if (state.ended && !prev.ended) handlers.current.onEnded?.();
+    if (state.status === 'error' && state.error?.fatal && state.error !== prev.error) failed(attempt, state.error);
+  });
+  openDirect();
+  return () => { disposed = true; preflight.abort(); unsubscribe(); };
+}
+
+export default function PlayerHost({ source, title, reloadKey, ...rest }: PlayerHostProps) {
+  // Callbacks change every render; the player reads the latest through a ref.
+  const handlers = useRef<Handlers>({ title, ...rest });
+  handlers.current = { title, ...rest };
+
+  const create = (container: HTMLElement) => {
+    const player = createVodPlayer({ container, title: handlers.current.title, lang: currentLocale() });
+    const stop = source?.src ? play(player, source, handlers) : undefined;
+    return { destroy: () => { stop?.(); return player.destroy(); } };
+  };
+  return <OtterPlayer className="mp-player" create={create} deps={[source?.src, source?.fallbackSrc, source?.type, reloadKey]} />;
 }

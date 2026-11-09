@@ -36,7 +36,7 @@ export default function SiteWatch() {
   const [range, setRange] = useState(0);
   const [autoNext, setAutoNext] = useState(() => localStorage.getItem(AUTO_NEXT_KEY) !== '0');
   const grid = useRef<HTMLDivElement>(null);
-  const position = useRef({ time: 0, saved: 0 });
+  const position = useRef({ time: 0, saved: 0, duration: 0 });
 
   const lines = detail?.lines || [];
   const selectedLine = lines.find(line => line.id === lineId) || lines[0];
@@ -69,7 +69,8 @@ export default function SiteWatch() {
 
   const save = (time = position.current.time) => {
     if (!detail || !selectedLine || !selectedEpisode) return;
-    writeProgress(itemId, { lineId: selectedLine.id, episodeId: selectedEpisode.id, episodeTitle: nameOf(selectedEpisode), time: Math.floor(time), updatedAt: Date.now() });
+    const { duration } = position.current;
+    writeProgress(itemId, { lineId: selectedLine.id, episodeId: selectedEpisode.id, episodeTitle: nameOf(selectedEpisode), time: Math.floor(time), duration: Number.isFinite(duration) && duration > 0 ? Math.floor(duration) : undefined, updatedAt: Date.now() });
     recordRecent({ id: itemId, title: detail.title, coverUrl: detail.coverUrl, episodeTitle: nameOf(selectedEpisode), updatedAt: Date.now() });
   };
   const saveRef = useRef(save);
@@ -77,7 +78,7 @@ export default function SiteWatch() {
   // Record the episode right away so "continue watching" follows episode switches.
   useEffect(() => {
     if (!selectedEpisode) return undefined;
-    position.current = { time: startTime, saved: startTime };
+    position.current = { time: startTime, saved: startTime, duration: 0 };
     setPlayerState('loading');
     setPlaying(false);
     saveRef.current(startTime);
@@ -138,10 +139,10 @@ export default function SiteWatch() {
     <SiteLayout flush>
       <div className="mp-band">
         <div className="mp-stage">
-          <PlayerHost source={source} startTime={startTime} reloadKey={reloadKey}
+          <PlayerHost source={source} title={[detail.title, selectedEpisode && showEpisodes && nameOf(selectedEpisode)].filter(Boolean).join(' · ')} startTime={startTime} reloadKey={reloadKey}
             onReady={at => { setPlayerState('ready'); if (at) message.info(t('cms.site.watch.resumed', { time: clockText(at) })); }}
             onFailure={setPlayerState}
-            onTime={time => { position.current.time = time; if (Math.abs(time - position.current.saved) >= 5) { position.current.saved = time; save(time); } }}
+            onTime={(time, duration) => { position.current.time = time; position.current.duration = duration; if (Math.abs(time - position.current.saved) >= 5) { position.current.saved = time; save(time); } }}
             onPlayingChange={value => { setPlaying(value); if (!value) save(); }}
             onEnded={() => { if (autoNext && hasNext) moveEpisode(1); }} />
           {playerState === 'loading' && selectedEpisode && <div className="mp-overlay mp-overlay-passive"><Spin size="large" /><div className="mp-overlay-desc">{t('cms.site.watch.loading')}</div></div>}
